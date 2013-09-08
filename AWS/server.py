@@ -23,6 +23,7 @@ FILES.clear()
 
 CRAWL = commoncrawl.CommonCrawl()
 METADATA = CRAWL.metadata
+del CRAWL
 
 
 @app.route("/Search/<keyword>")

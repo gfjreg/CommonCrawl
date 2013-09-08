@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 __author__ = 'aub3'
-import logging,time,requests,sys
+import logging,time,requests,sys,json,commoncrawl
 from settings import AWS_KEY,AWS_SECRET
 from boto.sqs.connection import SQSConnection
 from boto.sqs.message import Message
-import commoncrawl,logging,os
-from settings import STORE_PATH,LOCAL,AWS_KEY,AWS_SECRET
+from settings import STORE_PATH
 
 logging.basicConfig(filename='indexer.log',level=logging.ERROR,format='%(asctime)s %(message)s')
 SQS = SQSConnection(AWS_KEY,AWS_SECRET)
@@ -27,6 +26,18 @@ def index_file(metadata_file):
     except:
         logging.exception(metadata_file.path)
 
+def Search(q):
+    " a naive search method"
+    for data in Data.itervalues():
+        count = 0
+        for link1,link2,anchortext in data:
+            if q in link1 or q in link2 or q in anchortext:
+                count += 1
+                if count > 5:
+                    break
+                else:
+                    yield (link1,link2,anchortext)
+
 def main_worker():
     r = requests.post(sys.argv[1]+'/Add')
     if r.status_code == 200:
@@ -40,6 +51,12 @@ def main_worker():
         for query_message in queries:
             print "indexer",pid,query_message.get_body()
             query_queue.delete_message(query_message)
+            q = query_message.get_body()
+            result = ['\t'.join(k) for k in Search(q)]
+            m = Message()
+            m.set_body(json.dumps({'q':q,'results':result[:5]}))
+            RESULTS_QUEUE.write(m)
+            # there are numerous things which you can do here such as store data on S3 etc.
         file_messages = FILES_QUEUE.get_messages(1,5*60) # processes at most 1 file at a time
         params = {}
         for file_message in file_messages:
@@ -48,11 +65,9 @@ def main_worker():
             params={'file':file_message.get_body()}
             FILES_QUEUE.delete_message(file_message)
             r = requests.post(sys.argv[1]+'/Heartbeat/'+str(pid),params=params)
-        if r.status_code != 200:
-            raise IOError
+            if r.status_code != 200:
+                raise IOError
         time.sleep(10)
-
-
 
 if __name__ == '__main__':
         main_worker()

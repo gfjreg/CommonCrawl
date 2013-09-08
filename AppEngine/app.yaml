@@ -1,0 +1,64 @@
+application: datamininghobby
+version: 1
+runtime: python27
+api_version: 1
+default_expiration: "1d"
+threadsafe: true
+
+libraries:
+- name: webapp2
+  version: latest
+
+- name: jinja2
+  version: latest
+
+- name: numpy
+  version: latest
+
+- name: ssl
+  version: "latest"  # or "2.7", as of this writing
+
+builtins:
+- appstats: on
+- remote_api: on
+
+pagespeed:
+  domains_to_rewrite:
+  - www.datamininghobby.com
+
+skip_files:
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?\..*
+- ^(.*/)?.*\.bak$
+
+
+handlers:
+- url: /favicon\.ico
+  static_files: static/images/favicon.png
+  upload: static/images/favicon\.png
+
+- url: /robots\.txt
+  static_files: static/robotsnew.txt
+  upload: static/robotsnew\.txt
+
+- url: /static
+  static_dir: static
+  
+- url: /data
+  static_dir: data
+  login: admin
+  mime_type: text/html
+
+- url: /.*
+  script: main.app
+
+
+
+

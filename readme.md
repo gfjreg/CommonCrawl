@@ -9,11 +9,19 @@ Architecture
 -------------
 The architecture of Trawl Search is composed of
 
-Google App Engine (Public client)
+Google App Engine:
+    Public interface
+    http://www.datamininghobby.com
 
-EC2 Server
+AWS-EC2 Server:
+    For managing indexers
 
-EC2 Indexers
+AWS-EC2 Indexers:
+    For downloading and processing data from CommonCrawl
+
+AWS-SQS:
+    For managing common crawl files across multiple machines
+
 
 
 References

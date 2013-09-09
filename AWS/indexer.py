@@ -57,7 +57,8 @@ class Indexer:
         print "indexer",self.pid,query_message.get_body()
         self.QUERY_QUEUE.delete_message(query_message)
         q = query_message.get_body()
-        result = ['\t'.join(k) for k in self.Search(q)]
+        result = [k for k in self.Search(q)]
+        # while we post the results back to server, you can do what ever you would like such as storing huge blobs of results on S3
         r = requests.post(self.server+'/Indexer/Result',data ={'pass':PASSCODE,'pid':self.pid,'q':q,'results':json.dumps(result[:5])})
         del result
 
@@ -81,14 +82,14 @@ class Indexer:
                 file_processed = True
                 self.process_file(file_message)
             self.counter += 1
-            if self.counter == 10: # approximately after processing 5 files or every 3 minutes
+            if self.counter == 10: # approximately every 3 minutes or an extra call after 10 files
                 self.heartbeat()
                 self.counter = 0
             if not file_processed: # if no file was processed the sleep for thirty seconds
                 time.sleep(30)
 
     def heartbeat(self,fname=""):
-        r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'files':fname,'entries':self.entry_count,'pid':self.pid})
+        r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid})
 
 if __name__ == '__main__':
     if LOCAL:

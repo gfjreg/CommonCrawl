@@ -1,5 +1,5 @@
 keys.py
 *.pyc
 *.log
-AWS/local_storage_debug/*
 .idea/*
+install_scripts.sh

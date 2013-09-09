@@ -13,11 +13,8 @@ Google App Engine:
     Public interface
     http://www.datamininghobby.com
 
-AWS-EC2 Server:
-    For managing indexers
-
 AWS-EC2 Indexers:
-    For downloading and processing data from CommonCrawl
+    For downloading data from AWS-S3 and processing data
 
 AWS-SQS:
     For managing common crawl files across multiple machines

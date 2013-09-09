@@ -14,7 +14,7 @@ class Indexer(ndb.Model):
   pid = ndb.IntegerProperty()
   last_contact = ndb.DateTimeProperty(auto_now=True)
   files_processed = ndb.StringProperty(repeated=True)
-  # entries = ndb.IntegerProperty()
+  entries = ndb.IntegerProperty()
 
 def add_files(num=25):
     increment_file_count(num)
@@ -50,10 +50,11 @@ class Heartbeat(BaseRequestHandler):
     def post(self):
         if PASSCODE == self.request.get("pass"):
             pid = int(self.request.get("pid"))
-            filename = self.request.get("filename").split('\t')
+            filename = self.request.get("filename")
             i = Indexer.get_by_id(str(pid))
-            if filename:
-                i.files_processed.apend(filename)
+            i.entries = int(self.request.get("entries"))
+            if filename.strip():
+                i.files_processed.append(filename)
             i.put()
             return self.generate_json({'pid':pid})
         else:

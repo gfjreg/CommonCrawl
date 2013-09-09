@@ -1,6 +1,6 @@
-Trawl Search (A simple app for mining common crawl data)
----------------------------------------------------------
-
+Trawl Search
+------------
+ A simple app for mining common crawl data
 
 Author
 -------
@@ -19,31 +19,31 @@ AWS-EC2 Indexers:
 
 AWS-SQS:
     For managing common crawl files across multiple machines
+    
 
 Setting up
 -----------
+Create keys.py
 
-AWS:
-1. Setting up indexer.py
-
-2. add keys.py to AWS folder
-
-    AWS/keys.py
+    # Put following file in both AppEngine and AWS folders
     AWS_KEY = '<your AWS key>'
     AWS_SECRET = '<your AWS secret>'
     PASSCODE = 'Any short random passcode. make sure it is same in both files'
 
+Setting up indexers on AWS-EC2
 
-App Engine:
+1.  Add keys.py to AWS folder
+2.  Launch indexer.py in AWS folder
+3.  You should launch multiple processes depending on the type of EC-2 machines
 
-1. update app.yaml with your app identifier
+Setting up public interface on Google App Engine
 
-2. add keys.py to AppEngine folder
+1.  Update app.yaml with your app identifier
+2.  Add keys.py to AppEngine folder
+3.  Upload the code to app engine
+4.  Using the Google account which is owns the app you can access the admin page to configure and monitor progress
 
-    AppEngine/keys.py
-    AWS_KEY = '<your AWS key>'
-    AWS_SECRET = '<your AWS secret>'
-    PASSCODE = 'Any short random passcode. make sure it is same in both files'
+
 
 
 References

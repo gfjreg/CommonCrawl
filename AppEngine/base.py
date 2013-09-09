@@ -6,12 +6,8 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from keys import AWS_KEY,AWS_SECRET
 from boto.sqs.connection import SQSConnection
-
-SQS = SQSConnection(AWS_KEY,AWS_SECRET)
-FILES = SQS.get_queue('datamininghobby_files')
-METADATA_FILES = [line.strip() for line in gzip.open('metadata.gz')]
-TEXT_FILES = [line.strip() for line in gzip.open('metadata.gz')]
-# RAW_FILES = [line.strip() for line in gzip.open('metadata.gz')]
+from boto.sqs.message import Message
+from keys import PASSCODE
 
 
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))

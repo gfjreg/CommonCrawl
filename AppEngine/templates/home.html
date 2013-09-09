@@ -17,6 +17,7 @@
         {
                 $('#status').html('<div class="span12 alert alert-success" id="status" style="text-align:center"><b id="status_text">Connected to the server.</b> <span class="close" data-dismiss="alert">×</span></div>')
         }
+
         function submit(){
                 $.ajax({
                   dataType: "json",
@@ -24,6 +25,7 @@
                   data: {'q':$('#query').val()},
                   success: function(response,status){current_results.push(response);}
                    });
+            $('#query').val("")
             return false;
         };
 
@@ -49,9 +51,9 @@
             $(
             function(){
                 $('#search_btn').click(submit);
-                $('#change_server').click(change_server);
-                test_server();
-                setTimeout(test_server, 5*60000);
+//                $('#change_server').click(change_server);
+//                test_server();
+//                setTimeout(test_server, 5*60000);
             });
         </script>
 {% endblock %}

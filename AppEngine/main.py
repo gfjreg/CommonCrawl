@@ -1,27 +1,29 @@
 #!/usr/bin/env python
 from base import *
-from server_model import *
-import urlparse
+from indexer import *
 
 
 
-def set_current_server(location):
-    server = Server_Location(key=Server_Key,location='http://'+location.replace('http://','').strip())
-    server.put()
+# # RESULTS_QUEUE.clear()
+# QUERY_QUEUES = {}
+# Heartbeats = {}
+#
+# SQS = SQSConnection(AWS_KEY,AWS_SECRET)
+# FILES = SQS.get_queue('datamininghobby_files')
 
-def get_current_server():
-    return Server_Key.get().location
+
+# def set_current_server(location):
+#     server = Server_Location(key=Server_Key,location='http://'+location.replace('http://','').strip())
+#     server.put()
+#
+# def get_current_server():
+#     return Server_Key.get().location
 
 
-if LOCAL:
-    set_current_server('http://ec2-54-211-164-158.compute-1.amazonaws.com/')
-    EC2_Server = get_current_server()
-else:
-    try:
-        EC2_Server = get_current_server()
-    except:
-        EC2_Server = ""
-        pass
+RESULTS_QUEUE = SQS.create_queue("datamininghobby_results")
+QUERY_QUEUES = {}
+
+
 
 class Home(BaseRequestHandler):
     def get(self):
@@ -30,35 +32,22 @@ class Home(BaseRequestHandler):
 
 class Search(BaseRequestHandler):
     def get(self):
-        EC2_Server = get_current_server()
-        req = urllib2.Request(EC2_Server+'/Search/'+urllib2.quote(self.request.get('q')))
-        req.add_header('Cache-Control', 'max-age=0')
-        # user = users.get_current_user()
-        data = json.loads(urllib2.urlopen(req).read())
-        self.generate_json(data)
+        query = self.request.get('q')
+        for i in Indexer.query():
+            if i.pid not in QUERY_QUEUES:
+                QUERY_QUEUES[i.pid] = SQS.create_queue("datamininghobby_query_"+str(i.pid))
+            QUERY_QUEUES[i.pid].write(Message(body=query))
+        self.generate_json("success")
 
-class Server(BaseRequestHandler):
-    def get(self):
-        try:
-            EC2_Server = get_current_server()
-            req = urllib2.Request(EC2_Server)
-            req.add_header('Cache-Control', 'max-age=0')
-            data = json.loads(urllib2.urlopen(req).read())
-            self.generate_json(data)
-        except:
-            self.generate_json({"status":"offline"})
-            pass
 
 
 class Admin(BaseRequestHandler):
-    def post(self):
+    def get(self):
         user = users.get_current_user()
-        location = self.request.get('server')
         if user and users.is_current_user_admin():
-            set_current_server(location)
-            self.redirect("/")
+            self.generate('admin.html')
+            return
         else:
-            self.response.out.write(location)
             self.redirect(users.CreateLoginURL("/"))
             return
 
@@ -72,10 +61,8 @@ else:
 Routes = [
     ('/',Home),
     ('/Search/',Search),
-    ('/Admin/',Admin),
-    ('/Server/',Server),
-
-    ]
+    ('/Admin',Admin),
+    ] +Indexer_Routes
 app = webapp2.WSGIApplication(Routes,debug = LOCAL)
 
 

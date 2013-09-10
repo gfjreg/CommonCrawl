@@ -5,19 +5,52 @@
         </script>
 {% endblock %}
 {% block content %}
-    <div class="row halfmargin" id="status">
+<div class="row">
+    <div class="span12">
+        <h2>Metadata Files</h2>
     </div>
-    <div class="row">
+</div>
 
-    </div>
 <div class="row halfmargin">
-            <div class="span8 offset2">
-
-            </div>
+    <div class="span4">
+        <h3>Total Files</h3>
+        <h4>{{ totat_metadata }}</h4>
     </div>
-<div class="row" id="result_row">
-
-
+    <div class="span4">
+        <h3>Files Queued</h3>
+        <h4>{{ inprocess_metadata }}</h4>
+    </div>
+    <div class="span4">
+        <h3>Files processed</h3>
+        <h4>{{ processed_metadata }}</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="span12">
+        <h2>
+           List of current indexers
+        </h2>
+    </div>
+</div>
+<div class="row halfmargin">
+    <div class="span12">
+    <form action="/Admin" method="POST">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <th>Id</th><th>last contact</th><th>Number of files</th><th>Number of entires</th><th>Delete</th>
+            </thead>
+            <tbody>
+                {% for i in indexer_list %}
+                    <tr><td>{{  i.0 }}</td><td>{{ i.1 }}</td><td>{{ i.2 }}</td><td> {{ i.3 }}</td><td><input type="checkbox" id="{{ i.0 }}"></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    <div class="span4 offset4">
+        <button style="display:inline-block;margin-left: 5px;" class="btn" id="search_btn">Delete selected indexers</button>
+    </div>
+    </form>
+    </div>
 </div>
 {% endblock %}
+
 

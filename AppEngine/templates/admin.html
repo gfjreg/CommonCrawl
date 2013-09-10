@@ -2,54 +2,109 @@
 {% block title %}<title>Trawl Search: A simple app for mining Common Crawl data by Akshay Bhat</title>{% endblock %}
 {% block script %}
         <script>
+        function list_indexers(){return false;};
+        function delete_indexers(){
+//                $.ajax({
+//                  dataType: "json",
+//                  url: '/Search/',
+//                  data: {'q':$('#query').val()},
+//                  success: function(response,status){current_results.push(response);}
+//                   });
+//            $('#query').val("")
+            return false;
+        };
+
+        $(
+            function(){
+                $('#list_indexer').click(list_indexers);
+                $('#delete_indexer').click(delete_indexers);
+//                $('#change_server').click(change_server);
+//                test_server();
+//                setTimeout(test_server, 5*60000);
+            });
+
         </script>
 {% endblock %}
 {% block content %}
+
+<div class="row">
+    <div class="span8 offset2">
+        <h2 style="text-align:center">Admin Panel</h2>
+        <hr style="margin: 0px 0px 10px 0px;">
+    </div>
+</div>
+{% if status_error %}
+<div class="row">
+    <div class="span12 alert alert-error">
+            {{ statu_error }} <span class="close" data-dismiss="alert">×</span>
+    </div>
+</div>
+{% endif %}
+{% if status_success %}
+<div class="row">
+    <div class="span12 alert alert-success">
+            {{ status_success }} <span class="close" data-dismiss="alert">×</span>
+    </div>
+</div>
+{% endif %}
+<div class="row">
+    <div class="span4">
+        <h3 class="countlabel">Current time</h3>
+        <h3 class="hvalue" style="text-align:right;padding-top:5px"> {{ current_time }}</h3>
+    </div>
+</div>
+<div class="row">
+</div>
 <div class="row">
     <div class="span12">
-        <h2>Metadata Files</h2>
+        <h3>
+           File queue status
+        </h3>
     </div>
+    <div class="span2">
+        <h3 class="countlabel">Total Files</h3>
+        <h2 class="hvalue" style="text-align:right;padding-top:5px;margin-right:30px;">{{ totat_metadata }}</h2>
+    </div>
+    <div class="span2 offset1">
+        <h3 class="countlabel">Files Queued</h3>
+        <h2 class="hvalue" style="text-align:right;padding-top:5px;margin-right:30px;">{{ inprocess_metadata }}</h2>
+    </div>
+    <div class="span2 offset1">
+        <h3 class="countlabel">Files processed</h3>
+        <h2 class="hvalue" style="text-align:right;padding-top:5px;margin-right:30px;">{{ processed_metadata }}</h2>
+    </div>
+    <form action="/Admin" method="POST">
+        <div class="span4">
+            <h3 class="countlabel">Add to queue</h3>
+              <input type="text" class="span2" id="num"  name="num" style="margin-top:10px" placeholder="Number of files (E.g. 25)">
+              <button type="submit" class="btn" style="margin-top:2px">Add files to queue</button>
+        </div>
+    </form>
 </div>
 
-<div class="row halfmargin">
-    <div class="span4">
-        <h3>Total Files</h3>
-        <h4>{{ totat_metadata }}</h4>
-    </div>
-    <div class="span4">
-        <h3>Files Queued</h3>
-        <h4>{{ inprocess_metadata }}</h4>
-    </div>
-    <div class="span4">
-        <h3>Files processed</h3>
-        <h4>{{ processed_metadata }}</h4>
-    </div>
-</div>
 <div class="row">
     <div class="span12">
-        <h2>
+        <h3>
            List of current indexers
-        </h2>
+        </h3>
     </div>
 </div>
 <div class="row halfmargin">
     <div class="span12">
-    <form action="/Admin" method="POST">
         <table class="table table-bordered table-striped">
             <thead>
-                <th>Id</th><th>last contact</th><th>Number of files</th><th>Number of entires</th><th>Delete</th>
+                <th>Id</th><th>last contact</th><th>Number of files</th><th>Number of entires</th><th>Details</th><th>Delete</th>
             </thead>
             <tbody>
                 {% for i in indexer_list %}
-                    <tr><td>{{  i.0 }}</td><td>{{ i.1 }}</td><td>{{ i.2 }}</td><td> {{ i.3 }}</td><td><input type="checkbox" id="{{ i.0 }}"></td></tr>
+                    <tr><td>{{  i.0 }}</td><td>{{ i.1 }}</td><td style="text-align:left;padding-right:20px">{{ i.2 }}</td><td style="text-align:left;padding-right:20px"> {{ i.3 }}</td><td style="text-align:center"><a href="/Admin/Info/{{ i.0 }}">details</a></td><td style="text-align:center"><a href="/Admin/Delete/{{ i.0 }}">delete</a></td></tr>
                 {% endfor %}
             </tbody>
         </table>
-    <div class="span4 offset4">
-        <button style="display:inline-block;margin-left: 5px;" class="btn" id="search_btn">Delete selected indexers</button>
     </div>
-    </form>
-    </div>
+</div>
+<div class="row">
+
 </div>
 {% endblock %}
 

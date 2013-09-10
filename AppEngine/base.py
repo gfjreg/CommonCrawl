@@ -1,16 +1,19 @@
 #!/usr/bin/env python
-import os,gzip,zlib,logging,urllib2,marshal,json,webapp2,numpy,jinja2
+import os,gzip,zlib,logging,urllib2,marshal,json,webapp2,jinja2
 import cPickle as pickle
 from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.api import users
-from keys import AWS_KEY,AWS_SECRET
+from keys import AWS_KEY,AWS_SECRET,PASSCODE
 from boto.sqs.connection import SQSConnection
 from boto.sqs.message import Message
-from keys import PASSCODE
+METADATA_FILES = set([line.strip() for line in gzip.open('metadata.gz')])
+# TEXT_FILES = [line.strip() for line in gzip.open('text.gz')]
+# RAW_FILES = [line.strip() for line in gzip.open('metadata.gz')]
 
 
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+SQS = SQSConnection(AWS_KEY,AWS_SECRET)
 
 try:
     LOCAL = os.environ['SERVER_SOFTWARE'].startswith('Dev')

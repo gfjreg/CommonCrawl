@@ -23,6 +23,7 @@ class Indexer:
         self.counter = 0
         self.files = [ ]
         self.entry_count = 0
+        self.backup_path = ""
 
     def index_file(self,metadata_file):
         self.Data[metadata_file.path] = []
@@ -52,6 +53,8 @@ class Indexer:
                     else:
                         yield (link1,link2,anchortext)
 
+    def backup(self):
+        pass
 
     def process_query(self,query_message):
         print "indexer",self.pid,query_message.get_body()
@@ -92,8 +95,13 @@ class Indexer:
         r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid})
 
 if __name__ == '__main__':
+    import sys
+    try:
+        backup_path = sys.argv[1]
+    except:
+        backup_path = ''
     if LOCAL:
         indexer = Indexer(server="http://localhost:14080")
     else:
-        indexer = Indexer(server="http://www.datamininghobby.com")
+        indexer = Indexer(server="http://www.datamininghobby.com",backup_path=backup_path)
     indexer.work_loop()

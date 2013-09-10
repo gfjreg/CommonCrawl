@@ -1,39 +1,10 @@
 __author__ = 'aub3'
 from base import *
-from google.appengine.ext import ndb
+from indexer_model import *
 from shardcounter import *
+from queue_model import *
 
-SQS = SQSConnection(AWS_KEY,AWS_SECRET)
-FILES = SQS.create_queue('datamininghobby_files')
 
-METADATA_FILES = [line.strip() for line in gzip.open('metadata.gz')]
-# TEXT_FILES = [line.strip() for line in gzip.open('text.gz')]
-# RAW_FILES = [line.strip() for line in gzip.open('metadata.gz')]
-
-class Indexer(ndb.Model):
-  pid = ndb.IntegerProperty()
-  last_contact = ndb.DateTimeProperty(auto_now=True)
-  files_processed = ndb.StringProperty(repeated=True)
-  entries = ndb.IntegerProperty()
-
-def add_files(num=25):
-    increment_file_count(num)
-    end = get_file_count()
-    if end > len(METADATA_FILES)+num:
-        end  = end - len(METADATA_FILES)
-    start = end - num
-    for fname in METADATA_FILES[start:end]:
-        FILES.write(Message(body=fname))
-
-def create_indexer(pid):
-    i = Indexer.get_by_id(str(pid))
-    if i is None:
-        i = Indexer(id=str(pid))
-    i.pid = pid
-    queue = SQS.create_queue('datamininghobby_query_'+str(pid))
-    queue.clear()
-    i.files_processed = []
-    i.put()
 
 class Add(BaseRequestHandler):
     def post(self):

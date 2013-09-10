@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from base import *
 from indexer import *
+import datetime
 QUERY_QUEUES = {}
 
 
@@ -22,13 +23,14 @@ class Search(BaseRequestHandler):
 def get_status():
     status = {}
     status['indexer_list'] = []
+    status['current_time'] = datetime.datetime.now()
     all_files_indexed = []
     for i in Indexer.query():
         status['indexer_list'].append((i.pid,i.last_contact,len(i.files_processed),i.entries))
-        all_files_indexed.append(i.last_contact)
+        all_files_indexed += i.files_processed
     status['totat_metadata'] = len(METADATA_FILES)
     status['processed_metadata'] = len(all_files_indexed)
-    status['inprocess_metadata'] = len(METADATA_FILES)-len(all_files_indexed)
+    status['inprocess_metadata'] = get_queue_size() - len(all_files_indexed)
     return status
 
 class Admin(BaseRequestHandler):
@@ -36,7 +38,9 @@ class Admin(BaseRequestHandler):
         user = users.get_current_user()
         if user:
             if users.is_current_user_admin():
-                self.generate('admin.html',get_status())
+                status = get_status()
+                # status['status_success'] = "All is well in the wolrd"
+                self.generate('admin.html',status)
                 return
             else:
                 self.redirect("/")
@@ -49,7 +53,14 @@ class Admin(BaseRequestHandler):
         user = users.get_current_user()
         if user:
             if users.is_current_user_admin():
-                self.generate('admin.html',get_status())
+                status = get_status()
+                try:
+                    num = int(self.request.get('num',0))
+                    add_files(num)
+                    status['status_success'] = "Added "+str(num)+" files to the queue"
+                except:
+                    status['status_error'] = "Error while adding files to the queue"
+                self.generate('admin.html',status)
                 return
             else:
                 self.redirect("/")
@@ -58,6 +69,55 @@ class Admin(BaseRequestHandler):
             self.redirect(users.CreateLoginURL("/Admin"))
             return
 
+class IndexerDelete(BaseRequestHandler):
+    def get(self,pid):
+        user = users.get_current_user()
+        if user:
+            if users.is_current_user_admin():
+                i = Indexer.get_by_id(str(pid))
+                status = {}
+                if i:
+                    add_files(remove=set(i.files_processed))
+                    i.key.delete()
+                    if pid not in QUERY_QUEUES:
+                        QUERY_QUEUES[pid] = SQS.get_queue("datamininghobby_query_"+str(pid))
+                    if QUERY_QUEUES[pid]:
+                        QUERY_QUEUES[pid].clear()
+                        QUERY_QUEUES[pid].delete()
+                    del QUERY_QUEUES[pid]
+                    status['status_success'] = 'Deleted indexer '+pid
+                else:
+                    status['status_error'] = 'Could not find indexer '+pid
+                status.update(get_status())
+                self.generate('admin.html',status)
+                return
+            else:
+                self.redirect("/")
+                return
+        else:
+            self.redirect(users.CreateLoginURL("/Admin"))
+            return
+
+class IndexerInfo(BaseRequestHandler):
+    def get(self,pid):
+        user = users.get_current_user()
+        if user:
+            if users.is_current_user_admin():
+                i = Indexer.get_by_id(str(pid))
+                status = {}
+                if i:
+                    status = {'indexer':(i.pid,i.last_contact,i.files_processed,i.entries)}
+                else:
+                    status['status_error'] = 'Could not find indexer '+pid
+                status.update(get_status())
+                self.generate('admin.html',status)
+                return
+            else:
+                self.redirect("/")
+                return
+        else:
+            self.redirect(users.CreateLoginURL("/Admin"))
+            return
 
 
 if LOCAL:
@@ -68,7 +128,9 @@ Routes = [
     ('/',Home),
     ('/Search/',Search),
     ('/Admin',Admin),
-    ] +Indexer_Routes
+    ('/Admin/Delete/(.*)',IndexerDelete),
+    ('/Admin/Info/(.*)',IndexerInfo),
+    ] + Indexer_Routes
 app = webapp2.WSGIApplication(Routes,debug = LOCAL)
 
 

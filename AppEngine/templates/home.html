@@ -3,20 +3,6 @@
 {% block script %}
         <script>
         var current_results = [];
-        function change_server()
-        {
-            $('#status').html('<div class="span12 alert alert-warning" id="status" style="text-align:center"><span class="close" data-dismiss="alert">×</span><b id="status_text">Change server (requires administrator privileges).</b><form action="/Admin/" method="POST" ><input type="text" name="server" placeholder="please enter EC2 server. E.g. ec2-**-***-***-***.compute-1.amazonaws.com" id="server_input" class="span7" style="margin-top: 8px;"><button style="display:inline-block;margin-left: 5px;" class="btn" id="search_btn">Set server</button></form></div>');
-            return false
-        }
-
-        function server_error()
-        {
-            $('#status').html('<div class="span12 alert alert-error" id="status" style="text-align:center"><b id="status_text">Could not connect to the server.</b><form action="/Admin/" method="POST" ><input type="text" name="server" placeholder="please enter EC2 server. E.g. ec2-**-***-***-***.compute-1.amazonaws.com" id="server_input" class="span7" style="margin-top: 8px;"><button style="display:inline-block;margin-left: 5px;" class="btn" id="search_btn">Set server</button></form></div>');
-        }
-        function server_okay()
-        {
-                $('#status').html('<div class="span12 alert alert-success" id="status" style="text-align:center"><b id="status_text">Connected to the server.</b> <span class="close" data-dismiss="alert">×</span></div>')
-        }
 
         function submit(){
                 $.ajax({
@@ -29,24 +15,7 @@
             return false;
         };
 
-        function test_server(){
-                $.ajax({
-                  url: '/Server/',
-                  success: function(response){
-                      console.log(response)
-                      if (response.status == 'live')
-                      {
-                          server_okay();
-                      }
-                      else
-                      {
-                          server_error();
-                      }
-                  },
-                  error: server_error
-                  })
-                ;
-        };
+        setTimeout(test_server, 5*60000);
 
             $(
             function(){

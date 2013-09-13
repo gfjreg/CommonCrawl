@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 __author__ = 'aub3'
-import logging,time,requests,json,commoncrawl
+import logging,time,requests,json,commoncrawl,marshal,zlib
 from settings import AWS_KEY,AWS_SECRET,PASSCODE,STORE_PATH,LOCAL
 from boto.sqs.connection import SQSConnection
-from boto.sqs.message import Message
-logging.basicConfig(filename='indexer.log',level=logging.ERROR,format='%(asctime)s %(message)s')
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+
+if not LOCAL:
+    logging.basicConfig(filename='indexer.log',level=logging.ERROR,format='%(asctime)s %(message)s')
 
 
 
@@ -17,9 +20,11 @@ class Indexer:
         print "indexer assigned id:",self.pid
         self.selector = selector
         self.Data = {}
-        SQS = SQSConnection(AWS_KEY,AWS_SECRET)
-        self.FILES_QUEUE = SQS.get_queue("datamininghobby_files")
-        self.QUERY_QUEUE = SQS.get_queue("datamininghobby_query_"+str(self.pid))
+        self.SQS = SQSConnection(AWS_KEY,AWS_SECRET)
+        self.S3 = S3Connection(AWS_KEY, AWS_SECRET)
+        self.bucket = self.S3.create_bucket('datamininghobby_results')
+        self.FILES_QUEUE = self.SQS.get_queue("datamininghobby_files")
+        self.QUERY_QUEUE = self.SQS.get_queue("datamininghobby_query_"+str(self.pid))
         self.counter = 0
         self.files = [ ]
         self.entry_count = 0
@@ -38,6 +43,7 @@ class Indexer:
                                 self.Data[metadata_file.path].append((entry['url'],link[0],link[1]))
             metadata_file.clear()
             self.entry_count += len(self.Data[metadata_file.path])
+            self.backup_s3(metadata_file.key,self.Data[metadata_file.path])
         except:
             logging.exception(metadata_file.path)
 
@@ -48,13 +54,18 @@ class Indexer:
             for link1,link2,anchortext in data:
                 if q in link1 or q in link2 or q in anchortext:
                     count += 1
-                    if count > 5:
+                    if count > 10:
                         break
                     else:
                         yield (link1,link2,anchortext)
 
-    def backup(self):
-        pass
+    def backup_s3(self,f_key,data):
+        if data:
+            k = Key(self.bucket)
+            k.storage_class = 'REDUCED_REDUNDANCY'
+            k.key = str(self.pid)+'_'+f_key.split('segment')[1].replace('/','_')
+            k.set_contents_from_string(zlib.compress(marshal.dumps(data)))
+            k.close()
 
     def process_query(self,query_message):
         print "indexer",self.pid,query_message.get_body()
@@ -81,7 +92,7 @@ class Indexer:
             for query_message in self.QUERY_QUEUE.get_messages(10):
                 self.process_query(query_message)
             # there are numerous things which you can do here such as store data on S3 etc.
-            for file_message in self.FILES_QUEUE.get_messages(1,5*60):
+            for file_message in self.FILES_QUEUE.get_messages(1,visibility_timeout=10*60):
                 file_processed = True
                 self.process_file(file_message)
             self.counter += 1
@@ -103,5 +114,5 @@ if __name__ == '__main__':
     if LOCAL:
         indexer = Indexer(server="http://localhost:14080")
     else:
-        indexer = Indexer(server="http://www.datamininghobby.com",backup_path=backup_path)
+        indexer = Indexer(server="http://www.datamininghobby.com")
     indexer.work_loop()

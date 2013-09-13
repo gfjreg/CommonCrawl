@@ -50,11 +50,10 @@ handlers:
 
 - url: /static
   static_dir: static
-  
-- url: /data
-  static_dir: data
+
+- url: /Admin/.*
+  script: admin.app
   login: admin
-  mime_type: text/html
 
 - url: /.*
   script: main.app

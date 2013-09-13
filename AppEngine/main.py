@@ -1,8 +1,51 @@
 #!/usr/bin/env python
 from base import *
-from indexer import *
-import datetime
+from indexer_model import *
+from shardcounter import *
+from queue_model import *
+
 QUERY_QUEUES = {}
+
+class Add(BaseRequestHandler):
+    def post(self):
+        if PASSCODE == self.request.get("pass"):
+            increment_indexer_count()
+            pid = get_indexer_count()
+            create_indexer(pid)
+            return self.generate_json({'pid':pid})
+        else:
+            return self.generate_json("Error: passcode mismatch")
+
+class Heartbeat(BaseRequestHandler):
+    def post(self):
+        if PASSCODE == self.request.get("pass"):
+            pid = int(self.request.get("pid"))
+            filename = self.request.get("filename")
+            i = Indexer.get_by_id(str(pid))
+            i.entries = int(self.request.get("entries"))
+            if filename.strip():
+                i.files_processed.append(filename)
+            i.put()
+            return self.generate_json({'pid':pid})
+        else:
+            return self.generate_json("Error: passcode mismatch")
+
+class IndexerResult(BaseRequestHandler):
+    def post(self):
+        if PASSCODE == self.request.get("pass"):
+            pid = int(self.request.get("pid"))
+            results = json.loads(self.request.get("results"))
+            q = self.request.get('q')
+            data_string = memcache.get("q/"+q)
+            if data_string == None:
+                data = {pid:results}
+            else:
+                data = json.loads(data_string)
+                data[pid] = results
+            memcache.set("q/"+q,json.dumps(data),3600*4)
+            return self.generate_json([q,pid])
+        else:
+            return self.generate_json("Error: passcode mismatch")
 
 
 class Home(BaseRequestHandler):
@@ -20,117 +63,18 @@ class Search(BaseRequestHandler):
         self.generate_json("success")
 
 
-def get_status():
-    status = {}
-    status['indexer_list'] = []
-    status['current_time'] = datetime.datetime.now()
-    all_files_indexed = []
-    for i in Indexer.query():
-        status['indexer_list'].append((i.pid,i.last_contact,len(i.files_processed),i.entries))
-        all_files_indexed += i.files_processed
-    status['totat_metadata'] = len(METADATA_FILES)
-    status['processed_metadata'] = len(all_files_indexed)
-    status['inprocess_metadata'] = get_queue_size() - len(all_files_indexed)
-    return status
-
-class Admin(BaseRequestHandler):
-    def get(self):
-        user = users.get_current_user()
-        if user:
-            if users.is_current_user_admin():
-                status = get_status()
-                # status['status_success'] = "All is well in the wolrd"
-                self.generate('admin.html',status)
-                return
-            else:
-                self.redirect("/")
-                return
-        else:
-            self.redirect(users.CreateLoginURL("/Admin"))
-            return
-
-    def post(self):
-        user = users.get_current_user()
-        if user:
-            if users.is_current_user_admin():
-                status = get_status()
-                try:
-                    num = int(self.request.get('num',0))
-                    add_files(num)
-                    status['status_success'] = "Added "+str(num)+" files to the queue"
-                except:
-                    status['status_error'] = "Error while adding files to the queue"
-                self.generate('admin.html',status)
-                return
-            else:
-                self.redirect("/")
-                return
-        else:
-            self.redirect(users.CreateLoginURL("/Admin"))
-            return
-
-class IndexerDelete(BaseRequestHandler):
-    def get(self,pid):
-        user = users.get_current_user()
-        if user:
-            if users.is_current_user_admin():
-                i = Indexer.get_by_id(str(pid))
-                status = {}
-                if i:
-                    add_files(remove=set(i.files_processed))
-                    i.key.delete()
-                    if pid not in QUERY_QUEUES:
-                        QUERY_QUEUES[pid] = SQS.get_queue("datamininghobby_query_"+str(pid))
-                    if QUERY_QUEUES[pid]:
-                        QUERY_QUEUES[pid].clear()
-                        QUERY_QUEUES[pid].delete()
-                    del QUERY_QUEUES[pid]
-                    status['status_success'] = 'Deleted indexer '+pid
-                else:
-                    status['status_error'] = 'Could not find indexer '+pid
-                status.update(get_status())
-                self.generate('admin.html',status)
-                return
-            else:
-                self.redirect("/")
-                return
-        else:
-            self.redirect(users.CreateLoginURL("/Admin"))
-            return
-
-class IndexerInfo(BaseRequestHandler):
-    def get(self,pid):
-        user = users.get_current_user()
-        if user:
-            if users.is_current_user_admin():
-                i = Indexer.get_by_id(str(pid))
-                status = {}
-                if i:
-                    status = {'indexer':(i.pid,i.last_contact,i.files_processed,i.entries)}
-                else:
-                    status['status_error'] = 'Could not find indexer '+pid
-                status.update(get_status())
-                self.generate('admin.html',status)
-                return
-            else:
-                self.redirect("/")
-                return
-        else:
-            self.redirect(users.CreateLoginURL("/Admin"))
-            return
-
 
 if LOCAL:
     logging.getLogger().setLevel(logging.INFO)
 else:
     logging.getLogger().setLevel(logging.INFO)
-Routes = [
-    ('/',Home),
-    ('/Search/',Search),
-    ('/Admin',Admin),
-    ('/Admin/Delete/(.*)',IndexerDelete),
-    ('/Admin/Info/(.*)',IndexerInfo),
-    ] + Indexer_Routes
+
+Routes = [('/',Home),
+          ('/Search/',Search),
+          ('/Indexer/Add',Add),
+          ('/Indexer/Heartbeat',Heartbeat),
+          ('/Indexer/Result',IndexerResult),
+        ]
 app = webapp2.WSGIApplication(Routes,debug = LOCAL)
 
 

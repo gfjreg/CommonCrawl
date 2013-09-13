@@ -7,7 +7,7 @@ from google.appengine.api import users
 from keys import AWS_KEY,AWS_SECRET,PASSCODE
 from boto.sqs.connection import SQSConnection
 from boto.sqs.message import Message
-METADATA_FILES = set([line.strip() for line in gzip.open('metadata.gz')])
+METADATA_FILES = [line.strip() for line in gzip.open('metadata.gz')]
 # TEXT_FILES = [line.strip() for line in gzip.open('text.gz')]
 # RAW_FILES = [line.strip() for line in gzip.open('metadata.gz')]
 

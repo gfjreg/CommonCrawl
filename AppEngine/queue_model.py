@@ -7,40 +7,35 @@ class Queue(ndb.Model):
     """
     List of files in queue or processed
     """
-    files = ndb.StringProperty(repeated=True)
+    current_position = ndb.IntegerProperty()
 
-
-@ndb.transactional
-def queue_files(add,remove,exclude,max_add=None):
-    q = Queue.get_by_id("1")
-    if q == None:
-        q = Queue(id = "1")
-    if add:
-        current = set(q.files)
-        add = add.difference(exclude) # excludes are stopped from being added
-        if max_add and len(add) > max_add:
-            new_files = list(add.difference(current))[:max_add]
-            for fname in new_files:
-                FILES.write(Message(body=fname))
-            if q.files:
-                q.files += new_files
-            else:
-                q.files = new_files
-    if remove:
-        current = set(q.files)
-        q.files = list(current.difference_update(remove))
+def initialize_queue():
+    FILES.clear()
+    q = Queue(id = "1")
+    q.current_position = 0
     q.put()
 
-def get_queue_size():
+@ndb.transactional
+def get_current_position(num):
     q = Queue.get_by_id("1")
-    if q:
-        return len(q.files)
+    if q == None:
+        initialize_queue()
+    if q.current_position == None:
+        q.current_position = 0
+    current_position = q.current_position
+    q.current_position = q.current_position+num
+    q.put()
+    return current_position
+
+def add_files_queue(num):
+    current_position = get_current_position(num)
+    if current_position < len(METADATA_FILES):
+        for fname in METADATA_FILES[current_position:num+current_position]:
+            FILES.write(Message(body=fname))
     else:
-        return 0
+        return False
 
 
-def add_files(remove=None,num=100):
-    exclude = []
-    for i in Indexer.query():
-        exclude += i.files_processed
-    queue_files(METADATA_FILES,set(),set(exclude),num)
+
+
+

@@ -11,70 +11,39 @@ if not LOCAL:
 
 
 
-class Indexer:
-    def __init__(self,server,selector='amazon.com'):
+class Indexer(object):
+    def __init__(self,server,project_name):
+        self.project_name = project_name
         self.server = server
-        r = requests.post(self.server+'/Indexer/Add',data={'pass':PASSCODE})
+        r = requests.post(self.server+'/Indexer/Add',data={'pass':PASSCODE,'project_name':self.project_name})
         if r.status_code == 200:
             self.pid = int(r.json()['pid'])
         print "indexer assigned id:",self.pid
-        self.selector = selector
-        self.Data = {}
         self.SQS = SQSConnection(AWS_KEY,AWS_SECRET)
         self.S3 = S3Connection(AWS_KEY, AWS_SECRET)
-        self.bucket = self.S3.create_bucket('datamininghobby_results')
-        self.FILES_QUEUE = self.SQS.get_queue("datamininghobby_files")
-        self.QUERY_QUEUE = self.SQS.get_queue("datamininghobby_query_"+str(self.pid))
+        self.bucket = self.S3.create_bucket(project_name+'_results')
+        self.FILES_QUEUE = self.SQS.get_queue(project_name+"_files")
+        self.QUERY_QUEUE = self.SQS.get_queue(project_name+"_query_"+str(self.pid))
         self.counter = 0
-        self.files = [ ]
+        self.files = []
         self.entry_count = 0
         self.backup_path = ""
 
     def index_file(self,metadata_file):
-        self.Data[metadata_file.path] = []
-        try:
-            for url,json_string in metadata_file.parse():
-                if self.selector in json_string.lower():
-                    entry = commoncrawl.Metadata.extract_json(url,json_string)
-                    if entry:
-                        self.Data[metadata_file.path].append((entry['url'],entry['url'],entry['title']))
-                        for link in entry['links']:
-                            if self.selector in link[0] or self.selector in link[1]:
-                                self.Data[metadata_file.path].append((entry['url'],link[0],link[1]))
-            metadata_file.clear()
-            self.entry_count += len(self.Data[metadata_file.path])
-            self.backup_s3(metadata_file.key,self.Data[metadata_file.path])
-        except:
-            logging.exception(metadata_file.path)
+        # hook for processing files in the index queue
+        pass
 
-    def Search(self,q):
-        " a naive search"
-        for data in self.Data.itervalues():
-            count = 0
-            for link1,link2,anchortext in data:
-                if q in link1 or q in link2 or q in anchortext:
-                    count += 1
-                    if count > 10:
-                        break
-                    else:
-                        yield (link1,link2,anchortext)
 
-    def backup_s3(self,f_key,data):
+    def backup_s3(self,key,data):
         if data:
             k = Key(self.bucket)
             k.storage_class = 'REDUCED_REDUNDANCY'
-            k.key = str(self.pid)+'_'+f_key.split('segment')[1].replace('/','_')
+            k.key = key
             k.set_contents_from_string(zlib.compress(marshal.dumps(data)))
             k.close()
 
     def process_query(self,query_message):
-        print "indexer",self.pid,query_message.get_body()
-        self.QUERY_QUEUE.delete_message(query_message)
-        q = query_message.get_body()
-        result = [k for k in self.Search(q)]
-        # while we post the results back to server, you can do what ever you would like such as storing huge blobs of results on S3
-        r = requests.post(self.server+'/Indexer/Result',data ={'pass':PASSCODE,'pid':self.pid,'q':q,'results':json.dumps(result[:5])})
-        del result
+        pass
 
     def process_file(self,file_message):
         metadata_file = commoncrawl.Metadata(file_message.get_body(),STORE_PATH)
@@ -103,16 +72,6 @@ class Indexer:
                 time.sleep(30)
 
     def heartbeat(self,fname=""):
-        r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid})
 
-if __name__ == '__main__':
-    import sys
-    try:
-        backup_path = sys.argv[1]
-    except:
-        backup_path = ''
-    if LOCAL:
-        indexer = Indexer(server="http://localhost:14080")
-    else:
-        indexer = Indexer(server="http://www.datamininghobby.com")
-    indexer.work_loop()
+        r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid,'project_name':self.project_name})
+

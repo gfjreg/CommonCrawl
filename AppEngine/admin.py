@@ -2,27 +2,31 @@ __author__ = 'aub3'
 #!/usr/bin/env python
 from base import *
 from indexer_model import *
-from queue_model import *
+from collections import defaultdict
 import datetime
 QUERY_QUEUES = {}
 
 def get_status():
     status = {}
     status['indexer_list'] = []
-    status['current_time'] = datetime.datetime.now()
-    all_files_indexed = []
+    status['project_list'] = {}
+    project_entries_count = defaultdict(int)
+    project_files_count = defaultdict(int)
+    current_time = datetime.datetime.now()
+    status['current_time'] = current_time
     for i in Indexer.query():
-        status['indexer_list'].append((i.pid,i.last_contact,len(i.files_processed),i.entries))
-        all_files_indexed += i.files_processed
-    status['totat_metadata'] = len(METADATA_FILES)
-    status['processed_metadata'] = len(all_files_indexed)
-    # status['inprocess_metadata'] = FILES.count()
+        minutes,seconds = divmod((i.last_contact - current_time).total_seconds(),60)
+        status['indexer_list'].append((i.project_name,i.pid,"%s minutes and %s seconds ago"%(str(-1*minutes),str(int(round(seconds,0)))),len(i.files_processed),i.entries))
+        if i.entries:
+            project_entries_count[i.project_name] += i.entries
+            project_files_count[i.project_name] += len(i.files_processed)
+    for q in Queue.query():
+        status['project_list'][q.project_name]=(q.project_name,q.current_position,len(project_files_count),project_files_count[q.project_name],project_entries_count[q.project_name])
     return status
 
 class Admin(BaseRequestHandler):
     def get(self):
         status = get_status()
-        # status['status_success'] = "All is well in the wolrd"
         self.generate('admin.html',status)
         return
 
@@ -41,8 +45,8 @@ class Admin(BaseRequestHandler):
 
 class UpdateQueue(BaseRequestHandler):
     def get(self):
-        num = 500
-        if add_files_queue(num):
+        num = 10
+        if add_files_queue(num,project_name=None):
             self.generate_json({'num':num})
         else:
             self.generate_json({'num':False})

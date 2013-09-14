@@ -9,9 +9,9 @@ QUERY_QUEUES = {}
 class Add(BaseRequestHandler):
     def post(self):
         if PASSCODE == self.request.get("pass"):
-            increment_indexer_count()
-            pid = get_indexer_count()
-            create_indexer(pid)
+            project_name = self.request.get("project_name")
+            pid = increment_indexer_count()
+            create_indexer(pid,project_name)
             return self.generate_json({'pid':pid})
         else:
             return self.generate_json("Error: passcode mismatch")
@@ -20,12 +20,15 @@ class Heartbeat(BaseRequestHandler):
     def post(self):
         if PASSCODE == self.request.get("pass"):
             pid = int(self.request.get("pid"))
-            filename = self.request.get("filename")
+            filename = self.request.get("filename","")
             i = Indexer.get_by_id(str(pid))
-            i.entries = int(self.request.get("entries"))
-            if filename.strip():
-                i.files_processed.append(filename)
-            i.put()
+            if filename.strip() == "":
+                add_files_queue(50,i.project_name)
+            else:
+                i.entries = int(self.request.get("entries"))
+                if filename.strip():
+                    i.files_processed.append(filename)
+                i.put()
             return self.generate_json({'pid':pid})
         else:
             return self.generate_json("Error: passcode mismatch")

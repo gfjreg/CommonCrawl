@@ -18,6 +18,8 @@
             function(){
                 $('#list_indexer').click(list_indexers);
                 $('#delete_indexer').click(delete_indexers);
+                $("#projects_table").tablesorter({ sortList: [[0,0]] });
+                $("#indexer_table").tablesorter({ sortList: [[0,0]] });
 //                $('#change_server').click(change_server);
 //                test_server();
 //                setTimeout(test_server, 5*60000);
@@ -53,34 +55,38 @@
         <h3 class="hvalue" style="text-align:right;padding-top:5px"> {{ current_time }}</h3>
     </div>
 </div>
-<div class="row">
-</div>
+
 <div class="row">
     <div class="span12">
         <h3>
-           File queue status
+           List of current projects
         </h3>
     </div>
-    <div class="span2">
-        <h3 class="countlabel">Total Files</h3>
-        <h2 class="hvalue" style="text-align:right;padding-top:5px;margin-right:30px;">{{ totat_metadata }}</h2>
-    </div>
-    <div class="span2 offset1">
-        <h3 class="countlabel">Files Queued</h3>
-        <h2 class="hvalue" style="text-align:right;padding-top:5px;margin-right:30px;">{{ inprocess_metadata }}</h2>
-    </div>
-    <div class="span2 offset1">
-        <h3 class="countlabel">Files processed</h3>
-        <h2 class="hvalue" style="text-align:right;padding-top:5px;margin-right:30px;">{{ processed_metadata }}</h2>
-    </div>
-    <form action="/Admin/" method="POST">
-        <div class="span4">
-            <h3 class="countlabel">Add to queue</h3>
-              <input type="text" class="span2" id="num"  name="num" style="margin-top:10px" placeholder="Number of files (E.g. 25)">
-              <button type="submit" class="btn" style="margin-top:2px">Add files to queue</button>
-        </div>
-    </form>
 </div>
+<div class="row halfmargin">
+    <div class="span12">
+        <table class="table table-bordered table-striped tablesorter" id="projects_table">
+            <thead>
+                <th>Project name</th>
+                <th>Current queue position</th>
+                <th>Number of indexers</th>
+                <th>Number of files processed</th>
+                <th>Number of entries generated</th>
+            </thead>
+            <tbody>
+                {% for k,v in project_list.items() %}
+                    <tr><td>{{  k }}</td>
+                        <td style="text-align:right;padding-right:20px">{{ v.1 }}</td>
+                        <td style="text-align:right;padding-right:20px">{{ v.2}}</td>
+                        <td style="text-align:right;padding-right:20px">{{ v.3}}</td>
+                        <td style="text-align:right;padding-right:20px">{{ v.4}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 
 <div class="row">
     <div class="span12">
@@ -91,13 +97,26 @@
 </div>
 <div class="row halfmargin">
     <div class="span12">
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-striped tablesorter" id="indexer_table">
             <thead>
-                <th>Id</th><th>last contact</th><th>Number of files</th><th>Number of entires</th><th>Details</th><th>Delete</th>
+                <th>Project name</th>
+                <th>id</th>
+                <th>Last contact</th>
+                <th>Number of files</th>
+                <th>Number of entries</th>
+                <th>Details</th>
+                <th>Delete</th>
             </thead>
             <tbody>
                 {% for i in indexer_list %}
-                    <tr><td>{{  i.0 }}</td><td>{{ i.1 }}</td><td style="text-align:left;padding-right:20px">{{ i.2 }}</td><td style="text-align:left;padding-right:20px"> {{ i.3 }}</td><td style="text-align:center"><a href="/Admin/Info/{{ i.0 }}">details</a></td><td style="text-align:center"><a href="/Admin/Delete/{{ i.0 }}">delete</a></td></tr>
+                    <tr>
+                        <td>{{  i.0 }}</td>
+                        <td style="text-align:right;padding-right:20px">{{ i.1 }}</td>
+                        <td style="text-align:right;padding-right:20px">{{ i.2 }}</td>
+                        <td style="text-align:right;padding-right:20px"> {{ i.3 }}</td>
+                        <td style="text-align:right;padding-right:20px"> {{ i.4 }}</td>
+                        <td style="text-align:center"><a href="/Admin/Info/{{ i.1 }}">details</a></td>
+                        <td style="text-align:center"><a href="/Admin/Delete/{{ i.1 }}">delete</a></td></tr>
                 {% endfor %}
             </tbody>
         </table>

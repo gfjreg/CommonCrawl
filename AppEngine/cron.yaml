@@ -1,4 +1,0 @@
-cron:
-- description: check and update queue
-  url: /Admin/Queue/
-  schedule: every 2 minutes

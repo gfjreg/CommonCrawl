@@ -19,11 +19,10 @@ def get_indexer_count():
 
 @ndb.transactional
 def increment_indexer_count():
-    """Increment the value for a given sharded counter."""
-    shard_string_index = str(random.randint(0, NUM_SHARDS - 1))
-    counter = IndexCounter.get_by_id(shard_string_index)
+    counter = IndexCounter.get_by_id("0")
     if counter is None:
-        counter = IndexCounter(id=shard_string_index)
+        counter = IndexCounter(id="0")
     counter.count += 1
     counter.put()
+    return counter.count
 

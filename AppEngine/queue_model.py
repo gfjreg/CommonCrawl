@@ -42,7 +42,7 @@ def add_files_queue(num,project_name=None,):
                 file_queue.write(Message(body=fname))
     else:
         project_list = []
-        for q in Queue.query.get():
+        for q in Queue.query():
             project_list.append(q.project_name)
         for project_name in project_list:
             current_position,project_type = get_current_position(num,project_name)

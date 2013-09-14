@@ -11,6 +11,7 @@ def get_status():
     status['indexer_list'] = []
     status['project_list'] = {}
     project_entries_count = defaultdict(int)
+    project_indexer_count = defaultdict(int)
     project_files_count = defaultdict(int)
     current_time = datetime.datetime.now()
     status['current_time'] = current_time
@@ -20,8 +21,9 @@ def get_status():
         if i.entries:
             project_entries_count[i.project_name] += i.entries
             project_files_count[i.project_name] += len(i.files_processed)
+            project_indexer_count[i.project_name] += 1
     for q in Queue.query():
-        status['project_list'][q.project_name]=(q.project_name,q.project_type,q.current_position,len(project_files_count),project_files_count[q.project_name],project_entries_count[q.project_name])
+        status['project_list'][q.project_name]=(q.project_name,q.project_type,q.current_position,project_indexer_count[q.project_name],project_files_count[q.project_name],project_entries_count[q.project_name])
     return status
 
 class Admin(BaseRequestHandler):
@@ -45,7 +47,7 @@ class Admin(BaseRequestHandler):
 
 class UpdateQueue(BaseRequestHandler):
     def get(self):
-        num = 10
+        num = 25
         if add_files_queue(num,project_name=None):
             self.generate_json({'num':num})
         else:

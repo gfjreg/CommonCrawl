@@ -1,10 +1,35 @@
 #!/usr/bin/env python
 from base import *
 from indexer_model import *
-from shardcounter import *
-from queue_model import *
+import datetime
+from collections import defaultdict
 
 QUERY_QUEUES = {}
+
+def get_status():
+    status = {}
+    status['indexer_list'] = []
+    status['project_list'] = {}
+    project_entries_count = defaultdict(int)
+    project_indexer_count = defaultdict(int)
+    project_files_count = defaultdict(int)
+    current_time = datetime.datetime.now()
+    status['current_time'] = current_time
+    for i in Indexer.query():
+        minutes,seconds = divmod((i.last_contact - current_time).total_seconds(),60)
+        status['indexer_list'].append((i.project_name,i.pid,"%s minutes and %s seconds ago"%(str(-1*minutes),str(int(round(seconds,0)))),len(i.files_processed),i.entries))
+        if i.entries:
+            project_entries_count[i.project_name] += i.entries
+            project_files_count[i.project_name] += len(i.files_processed)
+            project_indexer_count[i.project_name] += 1
+    for q in Queue.query():
+        status['project_list'][q.project_name]=(q.project_name,q.project_type,q.current_position,project_indexer_count[q.project_name],project_files_count[q.project_name],project_entries_count[q.project_name])
+    return status
+
+
+
+
+
 
 class Add(BaseRequestHandler):
     def post(self):
@@ -56,7 +81,7 @@ class IndexerResult(BaseRequestHandler):
 class Home(BaseRequestHandler):
     def get(self):
         user = users.get_current_user()
-        self.generate('home.html')
+        self.generate('home.html',get_status())
 
 class Search(BaseRequestHandler):
     def get(self):

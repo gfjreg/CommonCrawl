@@ -4,6 +4,28 @@ from base import *
 from queue_model import *
 
 
+
+class IndexCounter(ndb.Model):
+    count = ndb.IntegerProperty(default=0)
+
+
+def get_indexer_count():
+    total = 0
+    for counter in IndexCounter.query():
+        total += counter.count
+    return total
+
+
+
+@ndb.transactional
+def increment_indexer_count():
+    counter = IndexCounter.get_by_id("0")
+    if counter is None:
+        counter = IndexCounter(id="0")
+    counter.count += 1
+    counter.put()
+    return counter.count
+
 class Indexer(ndb.Model):
   pid = ndb.IntegerProperty()
   last_contact = ndb.DateTimeProperty(auto_now=True)

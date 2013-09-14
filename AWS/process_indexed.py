@@ -13,13 +13,3 @@ S3 = S3Connection(AWS_KEY, AWS_SECRET)
 
 
 
-
-if __name__ == '__main__':
-    bucket = S3.get_bucket('datamininghobby_results')
-    key_list = bucket.get_all_keys()
-    print len(key_list)
-    temp = ''
-    temp = key_list[0].get_contents_as_string()
-    data = marshal.loads(zlib.decompress(temp))
-    for k in data:
-        print '\t'.join(k)

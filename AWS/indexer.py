@@ -12,16 +12,17 @@ if not LOCAL:
 
 
 class Indexer(object):
-    def __init__(self,server,project_name):
+    def __init__(self,server,project_name,project_type):
         self.project_name = project_name
+        self.project_type = project_type
         self.server = server
-        r = requests.post(self.server+'/Indexer/Add',data={'pass':PASSCODE,'project_name':self.project_name})
+        r = requests.post(self.server+'/Indexer/Add',data={'pass':PASSCODE,'project_name':self.project_name,'project_type':self.project_type})
         if r.status_code == 200:
             self.pid = int(r.json()['pid'])
         print "indexer assigned id:",self.pid
         self.SQS = SQSConnection(AWS_KEY,AWS_SECRET)
         self.S3 = S3Connection(AWS_KEY, AWS_SECRET)
-        self.bucket = self.S3.create_bucket(project_name+'_results')
+        self.bucket = self.S3.create_bucket(project_name.lower()+'_results')
         self.FILES_QUEUE = self.SQS.get_queue(project_name+"_files")
         self.QUERY_QUEUE = self.SQS.get_queue(project_name+"_query_"+str(self.pid))
         self.counter = 0
@@ -46,8 +47,10 @@ class Indexer(object):
         pass
 
     def process_file(self,file_message):
-        metadata_file = commoncrawl.Metadata(file_message.get_body(),STORE_PATH)
-        self.index_file(metadata_file)
+        if self.project_type == "Metadata":
+            self.index_file(commoncrawl.Metadata(file_message.get_body(),STORE_PATH))
+        elif self.project_type == "Text":
+            self.index_file(commoncrawl.Text(file_message.get_body(),STORE_PATH))
         self.files.append(file_message.get_body())
         print self.pid," indexed ",file_message.get_body()," total entries",self.entry_count
         self.heartbeat(file_message.get_body())
@@ -73,5 +76,5 @@ class Indexer(object):
 
     def heartbeat(self,fname=""):
 
-        r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid,'project_name':self.project_name})
+        r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid,'project_name':self.project_name,'project_type':self.project_type})
 

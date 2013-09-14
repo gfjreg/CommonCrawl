@@ -21,7 +21,7 @@ def get_status():
             project_entries_count[i.project_name] += i.entries
             project_files_count[i.project_name] += len(i.files_processed)
     for q in Queue.query():
-        status['project_list'][q.project_name]=(q.project_name,q.current_position,len(project_files_count),project_files_count[q.project_name],project_entries_count[q.project_name])
+        status['project_list'][q.project_name]=(q.project_name,q.project_type,q.current_position,len(project_files_count),project_files_count[q.project_name],project_entries_count[q.project_name])
     return status
 
 class Admin(BaseRequestHandler):

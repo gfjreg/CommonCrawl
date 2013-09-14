@@ -3,8 +3,7 @@ from indexer import *
 
 class AmazonRCM(Indexer):
     def __init__(self,server):
-        super(AmazonRCM,self).__init__(server=server,project_name='rcm_amazon')
-
+        super(AmazonRCM,self).__init__(server=server,project_name='rcm_amazon',project_type='Metadata')
     def index_file(self,metadata_file):
         self.Data = []
         try:
@@ -18,7 +17,7 @@ class AmazonRCM(Indexer):
             metadata_file.clear()
             self.entry_count += len(self.Data)
             if self.Data:
-                key= self.project_name+str(self.pid)+'_'+metadata_file.path.split('segment')[1].replace('/','_')
+                key= str(self.pid)+'/'+metadata_file.path.split('segment')[1].replace('/','_')
                 self.backup_s3(key,self.Data)
         except:
             logging.exception(metadata_file.path)

@@ -2,27 +2,11 @@
 {% block title %}<title>Trawl Search: A simple app for mining Common Crawl data by Akshay Bhat</title>{% endblock %}
 {% block script %}
         <script>
-        function list_indexers(){return false;};
-        function delete_indexers(){
-//                $.ajax({
-//                  dataType: "json",
-//                  url: '/Search/',
-//                  data: {'q':$('#query').val()},
-//                  success: function(response,status){current_results.push(response);}
-//                   });
-//            $('#query').val("")
-            return false;
-        };
 
         $(
             function(){
-                $('#list_indexer').click(list_indexers);
-                $('#delete_indexer').click(delete_indexers);
                 $("#projects_table").tablesorter({ sortList: [[0,0]] });
                 $("#indexer_table").tablesorter({ sortList: [[0,0]] });
-//                $('#change_server').click(change_server);
-//                test_server();
-//                setTimeout(test_server, 5*60000);
             });
 
         </script>
@@ -68,6 +52,7 @@
         <table class="table table-bordered table-striped tablesorter" id="projects_table">
             <thead>
                 <th>Project name</th>
+                <th>Project type</th>
                 <th>Current queue position</th>
                 <th>Number of indexers</th>
                 <th>Number of files processed</th>
@@ -75,11 +60,12 @@
             </thead>
             <tbody>
                 {% for k,v in project_list.items() %}
-                    <tr><td>{{  k }}</td>
-                        <td style="text-align:right;padding-right:20px">{{ v.1 }}</td>
+                    <tr><td>{{ k }}</td>
+                        <td>{{ v.1 }}</td>
                         <td style="text-align:right;padding-right:20px">{{ v.2}}</td>
                         <td style="text-align:right;padding-right:20px">{{ v.3}}</td>
                         <td style="text-align:right;padding-right:20px">{{ v.4}}</td>
+                        <td style="text-align:right;padding-right:20px">{{ v.5}}</td>
                     </tr>
                 {% endfor %}
             </tbody>

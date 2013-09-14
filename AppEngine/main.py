@@ -10,8 +10,10 @@ class Add(BaseRequestHandler):
     def post(self):
         if PASSCODE == self.request.get("pass"):
             project_name = self.request.get("project_name")
+            project_type = self.request.get("project_type")
             pid = increment_indexer_count()
-            create_indexer(pid,project_name)
+            create_indexer(pid,project_name,project_type)
+            add_files_queue(5,project_name)
             return self.generate_json({'pid':pid})
         else:
             return self.generate_json("Error: passcode mismatch")

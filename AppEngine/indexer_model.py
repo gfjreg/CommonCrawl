@@ -13,10 +13,10 @@ class Indexer(ndb.Model):
 
 
 
-def create_indexer(pid,project_name):
+def create_indexer(pid,project_name,project_type):
     q = Queue.get_by_id(project_name)
     if q is None:
-        initialize_queue(project_name)
+        initialize_queue(project_name,project_type)
     i = Indexer.get_by_id(str(pid))
     if i is None:
         i = Indexer(id=str(pid))

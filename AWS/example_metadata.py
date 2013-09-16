@@ -1,9 +1,9 @@
 __author__ = 'aub3'
 from indexer import *
 
-class AmazonRCM(Indexer):
+class ExampleMetadata(Indexer):
     def __init__(self,server):
-        super(AmazonRCM,self).__init__(server=server,project_name='example_metadata',project_type='Metadata',query_status=False)
+        super(ExampleMetadata,self).__init__(server=server,project_name='example_metadata',project_type='Metadata',query_status=False)
 
     def index_file(self,metadata_file):
         self.Data = []
@@ -26,9 +26,9 @@ class AmazonRCM(Indexer):
 
 if __name__ == '__main__':
     if LOCAL:
-        amazon_indexer = AmazonRCM(server="http://localhost:14080")
+        example_indexer = ExampleMetadata(server="http://localhost:14080")
     else:
-        amazon_indexer = AmazonRCM(server="http://www.datamininghobby.com")
-    amazon_indexer.work_loop()
+        example_indexer = ExampleMetadata(server="http://www.datamininghobby.com")
+    example_indexer.work_loop()
 
 

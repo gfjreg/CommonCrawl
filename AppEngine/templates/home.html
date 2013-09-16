@@ -12,7 +12,7 @@
                   data: {'q':q.val(),'project_type':$('#project_type').val()},
                   success: function(response,status){current_results.push(response);}
                    });
-            q.val("")
+            q.val("");
             return false;
         };
             $(
@@ -21,7 +21,6 @@
                 $("#projects_table").tablesorter({ sortList: [[0,0]] });
                 $("#indexer_table").tablesorter({ sortList: [[0,0]] });
             });
-
         </script>
 {% endblock %}
 {% block content %}
@@ -34,7 +33,7 @@
                     <div class="control-group" style="display:inline-block;">
                       <div class="controls">
                         <select id="project_type" name="project_type" class="input-large">
-                        {% for k,v in project_list.items() %}
+                        {% for k in projects_query_status %}
                             <option>{{ k }}</option>
                         {% endfor %}
                         </select>

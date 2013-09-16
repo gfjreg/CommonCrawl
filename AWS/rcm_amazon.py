@@ -3,7 +3,8 @@ from indexer import *
 
 class AmazonRCM(Indexer):
     def __init__(self,server):
-        super(AmazonRCM,self).__init__(server=server,project_name='rcm_amazon',project_type='Metadata')
+        super(AmazonRCM,self).__init__(server=server,project_name='rcm_amazon',project_type='Metadata',query_status=False)
+
     def index_file(self,metadata_file):
         self.Data = []
         try:

@@ -1,30 +1,10 @@
 __author__ = 'aub3'
 #!/usr/bin/env python
 from base import *
-from indexer_model import *
-from collections import defaultdict
-import datetime
+from models import *
+
 QUERY_QUEUES = {}
 
-def get_status():
-    status = {}
-    status['indexer_list'] = []
-    status['project_list'] = {}
-    project_entries_count = defaultdict(int)
-    project_indexer_count = defaultdict(int)
-    project_files_count = defaultdict(int)
-    current_time = datetime.datetime.now()
-    status['current_time'] = current_time
-    for i in Indexer.query():
-        minutes,seconds = divmod((i.last_contact - current_time).total_seconds(),60)
-        status['indexer_list'].append((i.project_name,i.pid,"%s minutes and %s seconds ago"%(str(-1*minutes),str(int(round(seconds,0)))),len(i.files_processed),i.entries))
-        if i.entries:
-            project_entries_count[i.project_name] += i.entries
-            project_files_count[i.project_name] += len(i.files_processed)
-            project_indexer_count[i.project_name] += 1
-    for q in Queue.query():
-        status['project_list'][q.project_name]=(q.project_name,q.project_type,q.current_position,project_indexer_count[q.project_name],project_files_count[q.project_name],project_entries_count[q.project_name])
-    return status
 
 class Admin(BaseRequestHandler):
     def get(self):
@@ -54,38 +34,16 @@ class UpdateQueue(BaseRequestHandler):
             self.generate_json({'num':False})
 
 
-
-
 class IndexerDelete(BaseRequestHandler):
     def get(self,pid):
-        i = Indexer.get_by_id(str(pid))
         status = {}
-        if i:
-            i.key.delete()
-            if pid not in QUERY_QUEUES:
-                QUERY_QUEUES[pid] = SQS.get_queue("datamininghobby_query_"+str(pid))
-            if QUERY_QUEUES[pid]:
-                QUERY_QUEUES[pid].clear()
-                QUERY_QUEUES[pid].delete()
-            del QUERY_QUEUES[pid]
+        if delete_indexer(pid):
             status['status_success'] = 'Deleted indexer '+pid
         else:
             status['status_error'] = 'Could not find indexer '+pid
         status.update(get_status())
         self.generate('admin.html',status)
         return
-
-
-class IndexerInfo(BaseRequestHandler):
-    def get(self,pid):
-        i = Indexer.get_by_id(str(pid))
-        status = {}
-        if i:
-            status = {'indexer':(i.pid,i.last_contact,i.files_processed,i.entries)}
-        else:
-            status['status_error'] = 'Could not find indexer '+pid
-        status.update(get_status())
-        self.generate('admin.html',status)
 
 
 if LOCAL:
@@ -98,7 +56,6 @@ Routes = [
     ('/Admin/',Admin),
     ('/Admin/Queue/',UpdateQueue),
     ('/Admin/Delete/(.*)',IndexerDelete),
-    ('/Admin/Info/(.*)',IndexerInfo),
     ]
 app = webapp2.WSGIApplication(Routes,debug = LOCAL)
 

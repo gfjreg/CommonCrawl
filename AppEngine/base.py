@@ -1,16 +1,15 @@
 #!/usr/bin/env python
-import os,gzip,zlib,logging,urllib2,marshal,json,webapp2,jinja2
-import cPickle as pickle
+import os,gzip,zlib,logging,urllib2,marshal,json,webapp2,jinja2,datetime
 from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.api import users
-from keys import AWS_KEY,AWS_SECRET,PASSCODE
+from config.keys import AWS_KEY,AWS_SECRET,PASSCODE
 from boto.sqs.connection import SQSConnection
 from boto.sqs.message import Message
+from collections import defaultdict
+import cPickle as pickle
 
-QueueFiles = {'Metadata':[line.strip() for line in gzip.open('metadata.gz')],'Text':[line.strip() for line in gzip.open('text.gz')]}
-
-# RAW_FILES = [line.strip() for line in gzip.open('metadata.gz')]
+QueueFiles = {'Metadata':[line.strip() for line in gzip.open('data/metadata.gz')],'Text':[line.strip() for line in gzip.open('data/text.gz')]}
 
 
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
@@ -26,12 +25,11 @@ except:
 
 
 class BaseRequestHandler(webapp2.RequestHandler):
-    def get(self,*args,**kw):
-        user = users.GetCurrentUser()
-        self.get_child(*args,**kw)
 
-    def generate(self, template_name, template_values={},cache=True):
+    def generate(self, template_name, template_values=None,cache=True):
         user = users.GetCurrentUser()
+        if template_values ==  None:
+            template_values = {}
         values = {
           'request': self.request,
           'user': user,
@@ -45,7 +43,6 @@ class BaseRequestHandler(webapp2.RequestHandler):
         output = template.render(values, debug=LOCAL)
         if cache:
             try:
-##                    memcache.add(self.request.uri, zlib.compress(output),4*3600)
                 memcache.add(self.request.uri,output,4*3600)
             except:
                 logging.error('Error while adding to memcache key: '+self.request.uri)

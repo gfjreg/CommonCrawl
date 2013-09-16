@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from AWS.hadoop.io.Writable import AbstractValueWritable
+from Writable import AbstractValueWritable
 
 class FloatWritable(AbstractValueWritable):
     def write(self, data_output):

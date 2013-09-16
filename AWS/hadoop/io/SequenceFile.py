@@ -22,13 +22,15 @@ from time import time
 import os
 
 from hadoop.util.ReflectionUtils import hadoopClassFromName, hadoopClassName
-from AWS.hadoop.io import Writable
 
-from AWS.hadoop.io.WritableUtils import readVInt, writeVInt
-from AWS.hadoop.io.OutputStream import *
-from AWS.hadoop.io.InputStream import *
-from AWS.hadoop.io import Text
-from AWS.hadoop.io.compress import CodecPool
+from compress import CodecPool
+
+from WritableUtils import readVInt, writeVInt
+from Writable import Writable
+from OutputStream import *
+from InputStream import *
+
+from Text import Text
 
 BLOCK_COMPRESS_VERSION  = '\x04'
 CUSTOM_COMPRESS_VERSION = '\x05'

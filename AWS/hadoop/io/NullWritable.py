@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from AWS.hadoop.io.Writable import WritableComparable
+from Writable import WritableComparable
 
 class NullWritable(WritableComparable):
     def __new__(cls, *p, **k):

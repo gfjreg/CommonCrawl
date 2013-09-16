@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from AWS import commoncrawl
 
 __author__ = 'aub3'
+import commoncrawl
 import logging,time,requests, marshal,zlib
 from settings import AWS_KEY,AWS_SECRET,PASSCODE,STORE_PATH,LOCAL
 from boto.sqs.connection import SQSConnection
@@ -68,9 +68,10 @@ class Indexer(object):
     def work_loop(self):
         while 1:
             file_processed = self.process_file_queue()
-            self.counter += 1
-            if file_processed:
+            if not file_processed:
                 self.heartbeat()
+                self.counter += 1
+                time.sleep(30)
 
     def heartbeat(self,fname=""):
         r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid,'project_name':self.project_name,'project_type':self.project_type})

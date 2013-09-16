@@ -16,9 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from AWS.hadoop.io.IntWritable import LongWritable
-from AWS.hadoop.io import MapFile
-
+from IntWritable import LongWritable
+import MapFile
 
 class Writer(MapFile.Writer):
     def __init__(self, path, value_class):

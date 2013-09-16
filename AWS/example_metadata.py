@@ -13,8 +13,8 @@ class ExampleMetadata(Indexer):
                     entry = commoncrawl.Metadata.extract_json(url,json_string)
                     if entry:
                         for link in entry['links']:
-                            if "amazon.com" in link[0] or "amazon.com" in link[1]:
-                                self.Data.append((entry['url'],link[0],link[1]))
+                            if "amazon.com" in link[0]:
+                                self.Data.append((entry['url'],link[0]))
             metadata_file.clear()
             self.entry_count += len(self.Data)
             if self.Data:

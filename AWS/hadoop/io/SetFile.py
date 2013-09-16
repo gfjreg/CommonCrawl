@@ -15,8 +15,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from AWS.hadoop.io import MapFile, NullWritable
 
+from NullWritable import NullWritable
+import MapFile
 
 class Writer(MapFile.Writer):
     def __init__(self, path, key_class):

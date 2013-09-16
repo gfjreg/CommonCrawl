@@ -3,7 +3,7 @@ from indexer import *
 
 class TextExample(Indexer):
     def __init__(self,server):
-        super(TextExample,self).__init__(server=server,project_name='example_text',project_type='Text',query_status=True)
+        super(TextExample,self).__init__(server=server,project_name='example_text',project_type='Text')
 
     def index_file(self,text_file):
         self.Data = []
@@ -19,8 +19,6 @@ class TextExample(Indexer):
         except:
             logging.exception(text_file.path)
 
-    def process_query(self,query_message):
-        print query_message.body
 
 if __name__ == '__main__':
     if LOCAL:

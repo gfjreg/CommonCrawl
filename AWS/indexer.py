@@ -14,15 +14,13 @@ if not LOCAL:
 
 
 class Indexer(object):
-    def __init__(self,server,project_name,project_type,query_status):
+    def __init__(self,server,project_name,project_type):
         self.project_name = project_name
         self.project_type = project_type
-        self.query_status = query_status
         self.server = server
         data={'pass':PASSCODE,
               'project_name':self.project_name,
-              'project_type':self.project_type,
-              'query_status':self.query_status}
+              'project_type':self.project_type}
         r = requests.post(self.server+'/Indexer/Add',data)
         if r.status_code == 200:
             self.pid = int(r.json()['pid'])
@@ -31,8 +29,6 @@ class Indexer(object):
         self.S3 = S3Connection(AWS_KEY, AWS_SECRET)
         self.bucket = self.S3.create_bucket(project_name.lower()+'_results')
         self.FILES_QUEUE = self.SQS.get_queue(project_name+"_files")
-        if self.query_status:
-            self.QUERY_QUEUE = self.SQS.get_queue(project_name+"_query_"+str(self.pid))
         self.counter = 0
         self.files = []
         self.entry_count = 0
@@ -51,18 +47,6 @@ class Indexer(object):
             k.set_contents_from_string(zlib.compress(marshal.dumps(data)))
             k.close()
 
-    def process_query(self,query_message):
-        # hook for proecessing queries in query queue
-        pass
-
-    def process_query_queue(self):
-        # processes at most 10 queries at a time
-        query_processed = False
-        for query_message in self.QUERY_QUEUE.get_messages(10):
-            query_processed = True
-            self.process_query(query_message)
-            self.QUERY_QUEUE.delete_message(query_message)
-        return query_processed
 
     def process_file(self,file_message):
         if self.project_type == "Metadata":
@@ -83,16 +67,10 @@ class Indexer(object):
 
     def work_loop(self):
         while 1:
-            query_processed = False
-            if self.query_status:
-                query_processed = self.process_query_queue()
             file_processed = self.process_file_queue()
             self.counter += 1
             if file_processed:
                 self.heartbeat()
-            elif not query_processed:
-                time.sleep(60) # pause for a minute before checking again for new queries
-
 
     def heartbeat(self,fname=""):
         r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid,'project_name':self.project_name,'project_type':self.project_type})

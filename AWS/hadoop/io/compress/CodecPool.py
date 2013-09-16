@@ -18,9 +18,8 @@
 
 from hadoop.util import ReflectionUtils
 
-from BZip2Codec import *
-from ZlibCodec import *
-from GzipCodec import *
+from AWS.hadoop.io.compress.ZlibCodec import *
+
 
 class CodecPool(object):
     def __new__(cls, *p, **k):

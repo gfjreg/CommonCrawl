@@ -16,5 +16,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodecPool import *
+from AWS.hadoop.io.compress.CodecPool import *
 

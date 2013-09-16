@@ -16,8 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from Writable import AbstractValueWritable
-from WritableUtils import readVInt, readVLong, writeVInt, writeVLong
+from AWS.hadoop.io.Writable import AbstractValueWritable
+from AWS.hadoop.io.WritableUtils import readVInt, readVLong, writeVInt, writeVLong
 
 class IntWritable(AbstractValueWritable):
     def write(self, data_output):

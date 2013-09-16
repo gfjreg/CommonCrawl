@@ -17,9 +17,9 @@
 # limitations under the License.
 
 import os
+from AWS.hadoop.io import SequenceFile
 
-from IntWritable import LongWritable
-import SequenceFile
+from AWS.hadoop.io.IntWritable import LongWritable
 
 INDEX_FILE_NAME = 'index'
 DATA_FILE_NAME = 'data'

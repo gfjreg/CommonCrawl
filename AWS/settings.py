@@ -1,12 +1,13 @@
 __author__ = 'aub3'
-import platform,os
+import platform
+import os
 
 
 DEBUG = True
 
 
 try:
-    from keys import AWS_KEY,AWS_SECRET,PASSCODE
+    from AWS.keys import AWS_KEY,AWS_SECRET,PASSCODE
 except:
     print "failed to import keys.py"
     raise ImportError

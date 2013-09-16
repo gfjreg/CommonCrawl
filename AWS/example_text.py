@@ -3,7 +3,7 @@ from indexer import *
 
 class TextExample(Indexer):
     def __init__(self,server):
-        super(TextExample,self).__init__(server=server,project_name='text_example',project_type='Text',query_status=True)
+        super(TextExample,self).__init__(server=server,project_name='example_text',project_type='Text',query_status=True)
 
     def index_file(self,text_file):
         self.Data = []

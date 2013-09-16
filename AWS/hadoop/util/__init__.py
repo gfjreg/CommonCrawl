@@ -16,5 +16,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ReflectionUtils import *
+from AWS.hadoop.util.ReflectionUtils import *
 

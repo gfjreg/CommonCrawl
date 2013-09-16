@@ -15,18 +15,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from AWS.hadoop.io import compress, WritableUtils, SequenceFile, OutputStream, SetFile
 
-import OutputStream
-import InputStream
+from AWS.hadoop.io.Writable import *
+from AWS.hadoop.io.IntWritable import *
+from AWS.hadoop.io.Text import *
+from AWS.hadoop.io import MapFile, ArrayFile, InputStream
 
-import SequenceFile
-import ArrayFile
-import MapFile
-import SetFile
-
-from Writable import *
-from IntWritable import *
-from Text import *
-import WritableUtils
-
-import compress

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # used for development when the AWS GUI is not sufficient
 __author__ = 'aub3'
-import logging,time,requests,json,commoncrawl,marshal,zlib
+
+import logging,time,requests,json,marshal,zlib
 from settings import AWS_KEY,AWS_SECRET,PASSCODE,STORE_PATH,LOCAL
 from boto.sqs.connection import SQSConnection
 from boto.s3.connection import S3Connection

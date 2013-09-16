@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+from AWS import commoncrawl
+
 __author__ = 'aub3'
-import logging,time,requests,json,commoncrawl,marshal,zlib
+import logging,time,requests, marshal,zlib
 from settings import AWS_KEY,AWS_SECRET,PASSCODE,STORE_PATH,LOCAL
 from boto.sqs.connection import SQSConnection
 from boto.s3.connection import S3Connection

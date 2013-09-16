@@ -19,7 +19,11 @@ class Indexer(object):
         self.project_type = project_type
         self.query_status = query_status
         self.server = server
-        r = requests.post(self.server+'/Indexer/Add',data={'pass':PASSCODE,'project_name':self.project_name,'project_type':self.project_type,'query_status':self.query_status})
+        data={'pass':PASSCODE,
+              'project_name':self.project_name,
+              'project_type':self.project_type,
+              'query_status':self.query_status}
+        r = requests.post(self.server+'/Indexer/Add',data)
         if r.status_code == 200:
             self.pid = int(r.json()['pid'])
         print "indexer assigned id:",self.pid
@@ -79,6 +83,7 @@ class Indexer(object):
 
     def work_loop(self):
         while 1:
+            query_processed = False
             if self.query_status:
                 query_processed = self.process_query_queue()
             file_processed = self.process_file_queue()
@@ -86,14 +91,9 @@ class Indexer(object):
             if file_processed:
                 self.heartbeat()
             elif not query_processed:
-                time.pause(60) # pause for a minute before checking for the
-
-
-
-
+                time.sleep(60) # pause for a minute before checking again for new queries
 
 
     def heartbeat(self,fname=""):
-
         r = requests.post(self.server+'/Indexer/Heartbeat',data={'pass':PASSCODE,'filename':fname,'entries':self.entry_count,'pid':self.pid,'project_name':self.project_name,'project_type':self.project_type})
 

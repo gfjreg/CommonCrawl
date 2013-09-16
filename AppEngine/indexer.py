@@ -59,21 +59,5 @@ class Heartbeat(BaseRequestHandler):
         else:
             return self.generate_json("Error: passcode mismatch")
 
-class IndexerResult(BaseRequestHandler):
-    def post(self):
-        if PASSCODE == self.request.get("pass"):
-            pid = int(self.request.get("pid"))
-            results = json.loads(self.request.get("results"))
-            q = self.request.get('q')
-            data_string = memcache.get("q/"+q)
-            if data_string == None:
-                data = {pid:results}
-            else:
-                data = json.loads(data_string)
-                data[pid] = results
-            memcache.set("q/"+q,json.dumps(data),3600*4)
-            return self.generate_json([q,pid])
-        else:
-            return self.generate_json("Error: passcode mismatch")
 
-indexer_routes= [('/Indexer/Add',Add),('/Indexer/Heartbeat',Heartbeat),('/Indexer/Result',IndexerResult)]
+indexer_routes= [('/Indexer/Add',Add),('/Indexer/Heartbeat',Heartbeat)]

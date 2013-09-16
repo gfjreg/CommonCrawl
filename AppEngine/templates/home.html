@@ -2,22 +2,8 @@
 {% block title %}<title>Trawl Search: A simple app for mining Common Crawl data by Akshay Bhat</title>{% endblock %}
 {% block script %}
         <script>
-        var current_results = [];
-
-        function submit(){
-            q =$('#query');
-                $.ajax({
-                  dataType: "json",
-                  url: '/Search/',
-                  data: {'q':q.val(),'project_type':$('#project_type').val()},
-                  success: function(response,status){current_results.push(response);}
-                   });
-            q.val("");
-            return false;
-        };
             $(
             function(){
-                $('#search_btn').click(submit);
                 $("#projects_table").tablesorter({ sortList: [[0,0]] });
                 $("#indexer_table").tablesorter({ sortList: [[0,0]] });
             });
@@ -26,29 +12,9 @@
 {% block content %}
     <div class="row halfmargin" id="status">
     </div>
-<div class="row">
-            <div class="span10 offset1">
-                <form >
-                    <input type="text" name="q" placeholder="Enter search terms. E.g. laptop, apple, mac book pro" id="query" class="span7">
-                    <div class="control-group" style="display:inline-block;">
-                      <div class="controls">
-                        <select id="project_type" name="project_type" class="input-large">
-                        {% for k in projects_query_status %}
-                            <option>{{ k }}</option>
-                        {% endfor %}
-                        </select>
-                      </div>
-                    </div>
-                    <button style="display:inline-block;margin-bottom:9px;" class="btn" id="search_btn">Search</button>
-                </form>
-            </div>
-    </div>
-<div class="row" id="result_row" style="display:none">
-</div>
+    
     <div class="row">
     <div class="span12">
-            <hr>
-
         <h3>
            List of current projects
         </h3>

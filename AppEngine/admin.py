@@ -3,8 +3,6 @@ __author__ = 'aub3'
 from base import *
 from models import *
 
-QUERY_QUEUES = {}
-
 
 class Admin(BaseRequestHandler):
     def get(self):

@@ -22,7 +22,7 @@ class Heartbeat(BaseRequestHandler):
             filename = self.request.get("filename","")
             i = Indexer.get_by_id(str(pid))
             if filename.strip() == "":
-                add_files_queue(50,i.project_name)
+                add_files_queue(50, i.project_name)
             else:
                 i.entries = int(self.request.get("entries"))
                 if filename.strip():

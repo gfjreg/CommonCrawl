@@ -7,7 +7,7 @@ DEBUG = True
 
 
 try:
-    from AWS.keys import AWS_KEY,AWS_SECRET,PASSCODE
+    from keys import AWS_KEY,AWS_SECRET,PASSCODE
 except:
     print "failed to import keys.py"
     raise ImportError

@@ -96,7 +96,7 @@ def create_indexer(pid,project_name,project_type):
 
 def delete_indexer(pid):
     i = Indexer.get_by_id(str(pid))
-    i.key().delete()
+    i.key.delete()
 
 def get_status():
     status = {}

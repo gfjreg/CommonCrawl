@@ -76,6 +76,7 @@ def increment_indexer_count():
 
 class Indexer(ndb.Model):
   pid = ndb.IntegerProperty()
+  start_time = ndb.DateTimeProperty(auto_now_add=True)
   last_contact = ndb.DateTimeProperty(auto_now=True)
   files_processed = ndb.StringProperty(repeated=True)
   project_name = ndb.StringProperty()
@@ -109,7 +110,8 @@ def get_status():
     status['current_time'] = current_time
     for i in Indexer.query():
         minutes,seconds = divmod((i.last_contact - current_time).total_seconds(),60)
-        status['indexer_list'].append((i.project_name,i.pid,"%s minutes and %s seconds ago"%(str(-1*minutes),str(int(round(seconds,0)))),len(i.files_processed),i.entries))
+        sminutes,sseconds = divmod((i.start_time - current_time).total_seconds(),60)
+        status['indexer_list'].append((i.project_name,i.pid,"%s minutes and %s seconds ago"%(str(-1*sminutes),str(int(round(sseconds,0)))),"%s minutes and %s seconds ago"%(str(-1*minutes),str(int(round(seconds,0)))),len(i.files_processed),i.entries))
         if i.entries:
             project_entries_count[i.project_name] += i.entries
             project_files_count[i.project_name] += len(i.files_processed)

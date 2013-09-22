@@ -2,7 +2,7 @@
 
 __author__ = 'aub3'
 import commoncrawl
-import logging,time,requests, marshal,zlib
+import logging,time,requests,json,zlib
 from settings import AWS_KEY,AWS_SECRET,PASSCODE,STORE_PATH,LOCAL
 from boto.sqs.connection import SQSConnection
 from boto.s3.connection import S3Connection
@@ -14,10 +14,13 @@ if not LOCAL:
 
 
 class Indexer(object):
-    def __init__(self,server,project_name,project_type):
+    def __init__(self,serverless,server,project_name,project_type):
         self.project_name = project_name
         self.project_type = project_type
-        self.server = server
+        if not serverless:
+            self.server = server
+        else:
+            self.server = None
         data={'pass':PASSCODE,
               'project_name':self.project_name,
               'project_type':self.project_type}
@@ -44,7 +47,7 @@ class Indexer(object):
             k = Key(self.bucket)
             k.storage_class = 'REDUCED_REDUNDANCY'
             k.key = key
-            k.set_contents_from_string(zlib.compress(marshal.dumps(data)))
+            k.set_contents_from_string(zlib.compress(json.dumps(data)))
             k.close()
 
 

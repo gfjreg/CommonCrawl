@@ -1,20 +1,24 @@
 __author__ = 'aub3'
 from indexer import *
+import re
 
 class ExampleMetadata(Indexer):
     def __init__(self,server):
-        super(ExampleMetadata,self).__init__(server=server,project_name='example_metadata',project_type='Metadata')
+        super(ExampleMetadata,self).__init__(serverless=False,server=server,project_name='example_metadata_amazon',project_type='Metadata')
+        self.regex = re.compile("amazon\.com|stackoverflow\.com|pinterest\.com|walmart\.com")
 
     def index_file(self,metadata_file):
-        self.Data = []
+        self.Data = {}
         try:
             for url,json_string in metadata_file.parse():
-                if 'amazon.com' in json_string.lower():
+                matches = self.regex.findall(json_string.lower())
+                if matches:
                     entry = commoncrawl.Metadata.extract_json(url,json_string)
                     if entry:
                         for link in entry['links']:
-                            if "amazon.com" in link[0]:
-                                self.Data.append((entry['url'],link[0]))
+                            for match in matches:
+                                if match in link[0] or match in entry['url']:
+                                    self.Data.setdefault(match,[]).append((entry['url'],link[0]))
             metadata_file.clear()
             self.entry_count += len(self.Data)
             if self.Data:

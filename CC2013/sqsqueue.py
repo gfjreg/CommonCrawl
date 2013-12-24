@@ -18,9 +18,27 @@ class FileQueue(object):
         self.N = N
         self.queue = FileQueue.SQS.create_queue(self.name)
 
+    def add_files(self,count=None):
+        """
+        if count is none then add all files to queue, otherwise add count files to queue
+        """
+        if count is None:
+            count = len(self.files)
+        while count:
+            self.queue.write(Message(body=self.files.pop()))
+            count -= 1
+
+    def clear(self):
+        """
+        Clears the queue. This is a costly operation.
+        """
+
+
 
 if __name__ == '__main__':
     import commoncrawl13
     crawl = commoncrawl13.CommonCrawl13('data/crawl_index.gz')
-    wat_queue = FileQueue()
+    wat_queue = FileQueue('aksay_test_queue',crawl.wat)
+    wat_queue.add_files(5)
+
 

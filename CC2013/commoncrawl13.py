@@ -11,7 +11,7 @@ class CommonCrawl13(object):
         Otherwise the list of keys is downloaded and stored in
         """
         if filename:
-            fh = gzip.open(filename,'w')
+            fh = gzip.open(filename)
             self.files = pickle.load(fh)
             fh.close()
         else:

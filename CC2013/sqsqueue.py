@@ -9,13 +9,12 @@ class FileQueue(object):
     """
     SQS = SQSConnection(AWS_KEY,AWS_SECRET)
 
-    def __init__(self,name,files,N=1):
+    def __init__(self,name,files):
         """
-        Requires list of files and queue name and optionally number of files per entry
+        Requires list of files and queue name
         """
         self.name = name
         self.files = files
-        self.N = N
         self.queue = FileQueue.SQS.create_queue(self.name)
 
     def add_files(self,count=None):

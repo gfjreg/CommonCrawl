@@ -7,8 +7,6 @@ Author
 Akshay Uday Bhat (www.akshaybhat.com)
 
 
-
-
 Documentation
 ------------
 https://docs.google.com/document/d/18-DxHyDnDCZiEpgY1AvFO-eq3SToh9Sm27g__uW2Myo/edit?usp=sharing

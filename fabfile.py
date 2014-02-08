@@ -30,6 +30,9 @@ def status():
 
 
 def upload():
+    """
+    Upload applications and library to EC2 instance
+    """
     run('rm -r /home/ec2-user/AWS')
     put('AWS','/home/ec2-user/')
     run('rm -r /home/ec2-user/libs')
@@ -41,8 +44,14 @@ def test_local():
         local('./commoncrawl13.py')
 
 def setup_spot_instance():
+    """
+    Upload spot.sh and set it to run on startup.
+    """
     put('spot.sh','')
     sudo('mv spot.sh /etc/rc.local')
 
-def upload_GAE():
+def update_app_engine():
+    """
+    Update/Upload app engine
+    """
     local("appcfg.py update GAE")

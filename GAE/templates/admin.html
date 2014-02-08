@@ -1,19 +1,46 @@
 {% extends "base_generic.html" %}
-{% block title %}<title>Trawl Search: A simple app for mining Common Crawl data by Akshay Bhat</title>{% endblock %}
+{% block title %}<title>Admin interface</title>{% endblock %}
 {% block script %}
         <script>
-            $(
+
+        $(
             function(){
                 $("#projects_table").tablesorter({ sortList: [[1,0]] });
                 $("#indexer_table").tablesorter({ sortList: [[1,0]] });
             });
+
         </script>
 {% endblock %}
 {% block content %}
-    <div class="row halfmargin" id="status">
-    </div>
 
-    <div class="row">
+<div class="row">
+    <div class="span8 offset2">
+        <h2 style="text-align:center">Admin Panel</h2>
+        <hr style="margin: 0px 0px 10px 0px;">
+    </div>
+</div>
+{% if status_error %}
+<div class="row">
+    <div class="span12 alert alert-error">
+            {{ statu_error }} <span class="close" data-dismiss="alert">×</span>
+    </div>
+</div>
+{% endif %}
+{% if status_success %}
+<div class="row">
+    <div class="span12 alert alert-success">
+            {{ status_success }} <span class="close" data-dismiss="alert">×</span>
+    </div>
+</div>
+{% endif %}
+<div class="row">
+    <div class="span4">
+        <h3 class="countlabel">Current time</h3>
+        <h3 class="hvalue" style="text-align:right;padding-top:5px"> {{ current_time }}</h3>
+    </div>
+</div>
+
+<div class="row">
     <div class="span12">
         <h3>
            List of current projects
@@ -61,9 +88,12 @@
                 <th>Project name</th>
                 <th>id</th>
                 <th>Time of first contact</th>
+
                 <th>Last contact</th>
                 <th>Number of files</th>
                 <th>Number of entries</th>
+                <th>Details</th>
+                <th>Delete</th>
             </thead>
             <tbody>
                 {% for i in indexer_list %}
@@ -74,11 +104,16 @@
                         <td style="text-align:right;padding-right:20px">{{ i.3 }}</td>
                         <td style="text-align:right;padding-right:20px"> {{ i.4 }}</td>
                         <td style="text-align:right;padding-right:20px"> {{ i.5 }}</td>
+                        <td style="text-align:center"><a href="/Admin/Info/{{ i.1 }}">details</a></td>
+                        <td style="text-align:center"><a href="/Admin/Delete/{{ i.1 }}">delete</a></td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+<div class="row">
 
+</div>
 {% endblock %}
+
 

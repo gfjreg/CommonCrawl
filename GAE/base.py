@@ -9,8 +9,7 @@ from boto.sqs.message import Message
 from collections import defaultdict
 import cPickle as pickle
 
-QueueFiles = {'Metadata':[line.strip() for line in gzip.open('data/metadata.gz')],'Text':[line.strip() for line in gzip.open('data/text.gz')]}
-
+#QueueFiles = {'Metadata':[line.strip() for line in gzip.open('data/metadata.gz')],'Text':[line.strip() for line in gzip.open('data/text.gz')]}
 
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 SQS = SQSConnection(AWS_KEY,AWS_SECRET)

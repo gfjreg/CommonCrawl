@@ -2,4 +2,3 @@ keys.py
 *.pyc
 *.log
 .idea/*
-install_scripts.sh

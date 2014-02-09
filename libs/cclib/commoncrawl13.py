@@ -2,10 +2,9 @@
 __author__ = 'aub3'
 import pickle,gzip,os
 from boto.s3.connection import S3Connection
-from keys import AWS_KEY,AWS_SECRET
 
 class CommonCrawl13(object):
-    def __init__(self,filename=os.path.dirname(__file__)+'/data/crawl_index.gz'):
+    def __init__(self,filename=os.path.dirname(__file__)+'/data/crawl_index.gz',aws_key=None,aws_secret=None):
         """
         if a pickled file is provided then it is loaded.
         Otherwise the list of keys is downloaded and stored in
@@ -20,13 +19,18 @@ class CommonCrawl13(object):
         self.text = [key for key in self.files if '/text/' in key]
         self.wet = [key for key in self.files if '/wet/' in key]
         self.wat = [key for key in self.files if '/wat/' in key]
+        self.aws_key = aws_key
+        self.aws_secret = aws_secret
 
     def download(self):
         """
         Downloads list of files
         """
         prefix = 'common-crawl/crawl-data/CC-MAIN-2013-20/segments/'
-        CONN = S3Connection(AWS_KEY,AWS_SECRET)
+        if self.aws_key and self.aws_secret:
+            CONN = S3Connection(self.aws_key,self.aws_secret)
+        else:
+            CONN = S3Connection()
         bucketname = 'aws-publicdatasets'
         bucket = CONN.get_bucket(bucketname)
         self.files = [key.name.encode('utf-8') for key in bucket.list(prefix)]

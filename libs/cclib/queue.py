@@ -1,13 +1,12 @@
 __author__ = 'aub3'
 from boto.sqs.connection import SQSConnection
 from boto.sqs.message import Message
-from settings import AWS_KEY,AWS_SECRET
 
 class FileQueue(object):
     """
     A queue of files stored on SQS.
     """
-    SQS = SQSConnection(AWS_KEY,AWS_SECRET)
+    SQS = SQSConnection()
 
     def __init__(self,name,files):
         """
@@ -36,7 +35,7 @@ class FileQueue(object):
 
 if __name__ == '__main__':
     import commoncrawl13
-    crawl = commoncrawl13.CommonCrawl13('data/crawl_index.gz')
+    crawl = commoncrawl13.CommonCrawl13()
     wat_queue = FileQueue('aksay_test_queue',crawl.wat)
     wat_queue.add_files(5)
 

@@ -1,6 +1,6 @@
 __author__ = 'aub3'
 from commoncrawl13 import CommonCrawl13
-from sqsqueue import FileQueue
+from queue import FileQueue
 
 
 

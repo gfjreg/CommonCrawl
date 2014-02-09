@@ -25,24 +25,37 @@ def setup_instance():
         sudo('make install')
 
 
+def test_update_lib():
+    with lcd('libs'):
+        try:
+            local('rm -r build')
+        except:
+            pass
+        local('python setup.py install')
+        local('rm -r build')
+
 
 def status():
     run('ls -l /home/ec2-user/')
 
 
-def upload():
+def upload_ec2(IAM=False,home_dir='/home/ec2-user'):
     """
-    Upload applications and library to EC2 instance
+    Upload applications to EC2 instance and installs the library
     """
-    run('rm -r /home/ec2-user/AWS')
-    put('AWS','/home/ec2-user/')
-    run('rm -r /home/ec2-user/libs')
-    put('libs','/home/ec2-user/')
+    try:
+        sudo('rm -rf ~/*')
+    except:
+        pass
+    put('AWS','~')
+    put('libs','~')
+    if not IAM: # not required if the remote machine uses IAM roles (preferred)
+        put('/etc/boto.cfg','~')
+    sudo('mv boto.cfg /etc/boto.cfg')
+    with cd(home_dir+'/libs'): # using ~ causes an error with sudo since ~ turns into /root/
+        sudo('python setup.py install')
+    sudo('rm -rf '+home_dir+'/libs')
 
-def test_local():
-    with lcd('libs/cclib'):
-        local('chmod a+x commoncrawl13.py')
-        local('./commoncrawl13.py')
 
 def setup_spot_instance():
     """
@@ -56,3 +69,4 @@ def update_app_engine():
     Update/Upload app engine
     """
     local("appcfg.py update GAE")
+

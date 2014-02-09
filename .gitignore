@@ -1,5 +1,6 @@
 keys.py
-hosts.py
+boot.cfg
 *.pyc
 *.log
 .idea/*
+libs/build/*

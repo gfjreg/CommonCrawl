@@ -1,6 +1,7 @@
 __author__ = 'aub3'
 from fabric.api import env,local,run,sudo,put,cd,lcd
-env.hosts = ['ec2-54-226-169-137.compute-1.amazonaws.com']
+from hosts import hosts
+env.hosts = hosts
 env.user = 'ec2-user'
 env.key_filename = '/users/aub3/.ssh/cornellmacos.pem'
 

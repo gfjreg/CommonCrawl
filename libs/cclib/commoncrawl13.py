@@ -2,12 +2,14 @@
 __author__ = 'aub3'
 import pickle,gzip,os
 from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+from StringIO import StringIO
+
 
 class CommonCrawl13(object):
     def __init__(self,filename=os.path.dirname(__file__)+'/data/crawl_index.gz',aws_key=None,aws_secret=None):
         """
-        if a pickled file is provided then it is loaded.
-        Otherwise the list of keys is downloaded and stored in
+        You can either provide a pickle with list of files or iterate over the segments.
         """
         if filename:
             fh = gzip.open(filename)
@@ -21,19 +23,20 @@ class CommonCrawl13(object):
         self.wat = [key for key in self.files if '/wat/' in key]
         self.aws_key = aws_key
         self.aws_secret = aws_secret
+        self.CONN = None
+        self.bucket = None
 
     def download(self):
         """
-        Downloads list of files
+        Downloads list of files iterating through all segments
         """
         prefix = 'common-crawl/crawl-data/CC-MAIN-2013-20/segments/'
         if self.aws_key and self.aws_secret:
-            CONN = S3Connection(self.aws_key,self.aws_secret)
+            self.CONN = S3Connection(self.aws_key,self.aws_secret)
         else:
-            CONN = S3Connection()
-        bucketname = 'aws-publicdatasets'
-        bucket = CONN.get_bucket(bucketname)
-        self.files = [key.name.encode('utf-8') for key in bucket.list(prefix)]
+            self.CONN = S3Connection()
+        self.bucket = self.CONN.get_bucket('aws-publicdatasets',validate=False)
+        self.files = [key.name.encode('utf-8') for key in self.bucket.list(prefix)]
 
     def store(self,filename=os.path.dirname(__file__)+'/data/crawl_index.gz'):
         """
@@ -43,10 +46,39 @@ class CommonCrawl13(object):
         pickle.dump(self.files,fh)
         fh.close()
 
+    def get_file(self,key,compressed_string=False):
+        """
+        Downloads file from AWS S3 and returns a GzipFile object.
+        Optionally if compressed_string == True then it can return the compressed data as a string.
+        """
+        if not self.CONN:
+            if self.aws_key and self.aws_secret:
+                self.CONN = S3Connection(self.aws_key,self.aws_secret)
+            else:
+                self.CONN = S3Connection()
+        if not self.bucket:
+            self.bucket = self.CONN.get_bucket('aws-publicdatasets',validate=False)
+        item = Key(self.bucket)
+        item.key = key
+        if compressed_string:
+            return item.get_contents_as_string()
+        else:
+            return gzip.GzipFile(fileobj=StringIO(item.get_contents_as_string()))
+
+
+
+
 if __name__ == '__main__':
     crawl = CommonCrawl13()
     print "wat",len(crawl.wat),crawl.wat[:10]
     print "wet",len(crawl.wet),crawl.wet[:10]
     print "warc",len(crawl.warc),crawl.warc[:10]
     print "text",len(crawl.text),crawl.text[:10]
+    infile = crawl.get_file(crawl.wat[0])
+    count  = 0
+    for line in infile:
+        print line
+        count += 1
+        if count>100:
+            break
     #crawl.store()

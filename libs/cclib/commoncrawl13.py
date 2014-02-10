@@ -7,6 +7,7 @@ from StringIO import StringIO
 
 
 class CommonCrawl13(object):
+
     def __init__(self,filename=os.path.dirname(__file__)+'/data/crawl_index.gz',aws_key=None,aws_secret=None):
         """
         You can either provide a pickle with list of files or iterate over the segments.
@@ -67,18 +68,18 @@ class CommonCrawl13(object):
 
 
 
-
 if __name__ == '__main__':
     crawl = CommonCrawl13()
     print "wat",len(crawl.wat),crawl.wat[:10]
     print "wet",len(crawl.wet),crawl.wet[:10]
     print "warc",len(crawl.warc),crawl.warc[:10]
     print "text",len(crawl.text),crawl.text[:10]
-    infile = crawl.get_file(crawl.wat[0])
+    infile = crawl.get_file(crawl.wat[26741])
     count  = 0
     for line in infile:
-        print line
         count += 1
-        if count>100:
+        if count>(100000-5000) and line[0] == '{':
+            print line
+        if count>100000:
             break
     #crawl.store()

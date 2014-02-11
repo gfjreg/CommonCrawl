@@ -69,6 +69,7 @@ class CommonCrawl13(object):
 
 
 if __name__ == '__main__':
+    # Few simple tests
     crawl = CommonCrawl13()
     print "wat",len(crawl.wat),crawl.wat[:10]
     print "wet",len(crawl.wet),crawl.wet[:10]

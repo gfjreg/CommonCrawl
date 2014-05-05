@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 __author__ = 'aub3'
 
-import boto.ec2,time,os
+import boto.ec2,time,datetime
 CONN = boto.ec2.connect_to_region("us-east-1")
 
 class SpotInstance(object):
 
     @classmethod
     def get_spot_instances(cls):
+        from config import EC2_Tag
         requests = CONN.get_all_spot_instance_requests()
-        return [SpotInstance(request.id,request.instance_id) for request in requests]
+        return [SpotInstance(EC2_Tag,request.id,request.instance_id) for request in requests]
 
 
     def __init__(self,tag,request_id=None,instance_id=None,):
@@ -22,6 +23,7 @@ class SpotInstance(object):
         self.key_name = None
         self.fulfilled = False
         self.instance_object = None
+        self.valid_until = None
         self.tag = tag
         if self.instance_id:
             self.fulfilled = True
@@ -40,7 +42,8 @@ class SpotInstance(object):
         print "You are launching a spot instance request."
         print "It is important that you closely monitor and cancel unfilled requests using AWS web console."
         if raw_input("\n Please enter 'yes' to start >> ")=='yes':
-            spot_request = CONN.request_spot_instances(price=price,instance_type=instance_type,image_id=image_id,key_name=key_name)
+            self.valid_until = datetime.datetime.now()+datetime.timedelta(minutes=20) # valid for 20 minutes from now
+            spot_request = CONN.request_spot_instances(price=price,instance_type=instance_type,image_id=image_id,key_name=key_name,valid_until=self.valid_until)
             print "requesting a spot instance"
             time.sleep(30) # wait for some time, otherwise AWS throws up an error
             self.request_id = spot_request[0].id

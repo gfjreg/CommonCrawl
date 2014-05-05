@@ -24,11 +24,17 @@ class FileQueue(object):
         """
         if count is none then add all files to queue, otherwise add count files to queue
         """
+        message_buffer =[]
         if count is None:
             count = len(self.files)
         while count:
-            self.queue.write(Message(body=self.files.pop()))
             count -= 1
+            message_buffer.append(Message(body=self.files.pop()))
+            if len(message_buffer) > 9:
+                self.queue.write_batch(message_buffer)
+                message_buffer = []
+        if message_buffer: # write remaining
+            self.queue.write_batch(message_buffer)
 
     def clear(self):
         """

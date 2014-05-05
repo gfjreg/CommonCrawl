@@ -1,10 +1,15 @@
 __author__ = 'aub3'
+import gzip
+import logging
+import StringIO
+
 from cclib import commoncrawl13
 from cclib.queue import FileQueue
-from config import OUTPUT_S3_BUCKET, JOB_QUEUE
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-import gzip,logging,StringIO
+
+from config import OUTPUT_S3_BUCKET, JOB_QUEUE
+
 logging.basicConfig(filename='logs/worker.log',level=logging.DEBUG,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logging.getLogger('boto').setLevel(logging.CRITICAL)
 
@@ -14,7 +19,7 @@ BUCKET = CONN.get_bucket(OUTPUT_S3_BUCKET,validate=False)
 def Store_S3(fname,data):
     try:
         item = Key(BUCKET)
-        item.key = JOB_QUEUE+'_'+str(hash(fname))
+        item.key = JOB_QUEUE+'_'+str(hash(fname))+'.gz'
         out = StringIO.StringIO()
         payload = '\n'.join(data)
         f = gzip.GzipFile(fileobj=out, mode="w")
@@ -41,7 +46,7 @@ def process_queue(queue,crawl):
 
 def process_file(fileobj):
     try:
-        return [line for line in fileobj if line[0] == '{' and 'tumblr.com' in line] # returns all lines with JSON encoding which contains facebook.com
+        return [line for line in fileobj if 'amazon.com' in line.lower()] #
     except:
         logging.exception(" error while processing file")
 

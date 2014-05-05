@@ -1,8 +1,8 @@
 __author__ = 'aub3'
 from fabric.api import env,local,run,sudo,put,cd,lcd
 from hosts import hosts
-from config import key_filename, OUTPUT_S3_BUCKET, JOB_QUEUE
-from spot_manager import *
+from config import key_filename, OUTPUT_S3_BUCKET, JOB_QUEUE,EC2_Tag
+from spotinstance import *
 
 
 env.hosts = hosts
@@ -12,7 +12,7 @@ env.key_filename = key_filename
 
 def setup_queue():
     """
-    Sets up the queue, creates bucket
+    Sets up the queue adds all files (text or warc or wat or wet) , creates bucket to store output
     """
     import logging
     from boto.s3.connection import S3Connection
@@ -46,7 +46,7 @@ def setup_instance(IAM=False,home_dir='/home/ec2-user'):
     sudo('yum install -y python-devel')
     sudo('yum install -y python-setuptools')
     sudo('easy_install flask') # not used
-    local('mv config.py AWS/config.py')
+    local('cp config.py AWS/config.py')
     try:
         sudo('rm -rf '+home_dir+'/*')
     except:
@@ -65,6 +65,7 @@ def setup_instance(IAM=False,home_dir='/home/ec2-user'):
     with cd(home_dir+'/libs'): # using ~ causes an error with sudo since ~ turns into /root/
         sudo('python setup.py install')
     sudo('rm -rf '+home_dir+'/libs')
+    local('rm AWS/config.py')
 
 
 def list_spot_instances():
@@ -80,17 +81,25 @@ def request_spot_instance():
     Lists current EC2 instances
     """
     from config import price,instance_type,image_id,key_name
-    spot = SpotInstance()
+    spot = SpotInstance(EC2_Tag)
     spot.request_instance(price,instance_type,image_id,key_name)
     spot.check_allocation()
+    spot.add_tag()
     with open('hosts.py','w') as fh:
         fh.write('hosts = '+repr([spot.public_dns_name])+'\ninstance_id="'+spot.instance_id+'"\n')
-    print "information about current spot instance written to "
+    print "Information about current spot instance written to hosts.py"
+    print "Use 'fab setup_instance' and 'fab run_workers'"
 
 
-def terminate_spot_instance():
-    #spot.terminate()
-    pass
+def terminate_all_spot():
+    """
+    Terminates all spot instances
+    """
+    for s in SpotInstance.get_spot_instances():
+        print "terminating"
+        print s.status()
+        s.terminate()
+        print "terminated"
 
 def test_update_lib():
     """
@@ -103,12 +112,6 @@ def test_update_lib():
             pass
         local('python setup.py install')
         local('rm -r build')
-
-def setup_job():
-    """
-    Sets up the queue
-    """
-    local('python setup_queue.py')
 
 def run_workers(N=32,IAM=False,home_dir='/home/ec2-user'):
     """

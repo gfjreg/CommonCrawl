@@ -12,7 +12,7 @@ class SpotInstance(object):
         return [SpotInstance(request.id,request.instance_id) for request in requests]
 
 
-    def __init__(self,request_id=None,instance_id=None):
+    def __init__(self,tag,request_id=None,instance_id=None,):
         self.request_id = request_id
         self.instance_id = instance_id
         self.public_dns_name = None
@@ -22,9 +22,14 @@ class SpotInstance(object):
         self.key_name = None
         self.fulfilled = False
         self.instance_object = None
+        self.tag = tag
         if self.instance_id:
             self.fulfilled = True
             self.get_instance()
+
+    def add_tag(self):
+        if self.instance_id:
+            CONN.create_tags([self.instance_id], {"Tag":self.tag})
 
 
     def request_instance(self,price,instance_type,image_id,key_name):
@@ -34,7 +39,7 @@ class SpotInstance(object):
         self.key_name = key_name
         print "You are launching a spot instance request."
         print "It is important that you closely monitor and cancel unfilled requests using AWS web console."
-        if raw_input("Please enter 'yes' to start>> ")=='yes':
+        if raw_input("\n Please enter 'yes' to start >> ")=='yes':
             spot_request = CONN.request_spot_instances(price=price,instance_type=instance_type,image_id=image_id,key_name=key_name)
             print "requesting a spot instance"
             time.sleep(30) # wait for some time, otherwise AWS throws up an error

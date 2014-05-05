@@ -75,6 +75,22 @@ def list_spot_instances():
         print s.status()
 
 
+def request_spot_instance():
+    """
+    Lists current EC2 instances
+    """
+    from config import price,instance_type,image_id,key_name
+    spot = SpotInstance()
+    spot.request_instance(price,instance_type,image_id,key_name)
+    spot.check_allocation()
+    with open('hosts.py','w') as fh:
+        fh.write('hosts = '+repr([spot.public_dns_name])+'\ninstance_id="'+spot.instance_id+'"\n')
+    print "information about current spot instance written to "
+
+
+def terminate_spot_instance():
+    #spot.terminate()
+    pass
 
 def test_update_lib():
     """
@@ -111,8 +127,14 @@ def create_ami():
     """
     pass
 
-def Update_GAE():
+def deploy_GAE():
     """
     Updates and uploads Google App Engine   (Optional)
+    """
+    pass
+
+def start_local_server():
+    """
+    A Local flask server provides information about current job   (Optional)
     """
     pass

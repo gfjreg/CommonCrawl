@@ -69,14 +69,3 @@ class SpotInstance(object):
     def terminate(self):
         print "terminating spot instance",self.instance_id,self.public_dns_name
         CONN.terminate_instances(instance_ids=[self.instance_id])
-
-if __name__ == '__main__':
-    from config import price,instance_type,image_id,key_name
-    #spot = SpotInstance()
-    #spot.request_instance(price,instance_type,image_id,key_name)
-    #spot.check_allocation()
-    #spot.terminate()
-    #with open('hosts.py','w') as fh:
-    #    fh.write('hosts = '+repr([spot.public_dns_name])+'\ninstance_id="'+spot.instance_id+'"\n')
-    #os.system('fab setup_instance')
-    #os.system('fab run_workers')

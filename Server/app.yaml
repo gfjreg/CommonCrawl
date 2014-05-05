@@ -48,7 +48,7 @@ handlers:
   static_dir: static
 
 - url: /.*
-  script: main.app
+  script: gae.app
 
 
 

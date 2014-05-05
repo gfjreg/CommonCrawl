@@ -5,12 +5,15 @@ from google.appengine.api import users
 #from keys import AWS_KEY,AWS_SECRET
 
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+logging.getLogger().setLevel(logging.INFO)
+
+
+
 
 try:
     LOCAL = os.environ['SERVER_SOFTWARE'].startswith('Dev')
 except:
     LOCAL = False
-
 
 
 
@@ -45,5 +48,16 @@ class BaseRequestHandler(webapp2.RequestHandler):
 
 
 
-            
+
+
+class Home(BaseRequestHandler):
+    def get(self):
+        self.generate('home.html')
+
+home_routes = [('/',Home),]
+
+Routes = home_routes
+
+app = webapp2.WSGIApplication(Routes,debug = LOCAL)
+
 

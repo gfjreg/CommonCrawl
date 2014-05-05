@@ -5,3 +5,4 @@ hosts.py
 *.log
 .idea/*
 libs/build/*
+logs/*

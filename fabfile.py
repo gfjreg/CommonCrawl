@@ -2,10 +2,8 @@ __author__ = 'aub3'
 from fabric.api import env,local,run,sudo,put,cd,lcd
 from hosts import hosts
 from config import key_filename, OUTPUT_S3_BUCKET, JOB_QUEUE
+from spot_manager import *
 
-import boto.ec2,time,os
-
-CONN = boto.ec2.connect_to_region("us-east-1")
 
 env.hosts = hosts
 env.user = 'ec2-user'
@@ -35,9 +33,10 @@ def setup_queue():
     print "Finished adding files"
 
 
-def setup_instance():
+def setup_instance(IAM=False,home_dir='/home/ec2-user'):
     """
     updates, installs necessary packages on an EC2 instance
+    upload library, boto configuration, worker code
     """
     sudo('yum update -y')
     # install GCC, Make, Setuptools etc.
@@ -47,22 +46,33 @@ def setup_instance():
     sudo('yum install -y python-devel')
     sudo('yum install -y python-setuptools')
     sudo('easy_install flask') # not used
+    local('mv config.py AWS/config.py')
+    try:
+        sudo('rm -rf '+home_dir+'/*')
+    except:
+        pass
+    put('AWS','~')
+    put('libs','~')
+    with cd('AWS'):
+        try:
+            run('rm -r logs')
+            run('mkdir logs')
+        except:
+            pass
+    if not IAM: # not required if the remote machine uses IAM roles (preferred)
+        put('/etc/boto.cfg','~')
+    sudo('mv boto.cfg /etc/boto.cfg')
+    with cd(home_dir+'/libs'): # using ~ causes an error with sudo since ~ turns into /root/
+        sudo('python setup.py install')
+    sudo('rm -rf '+home_dir+'/libs')
 
 
-def list_ec2_instances():
+def list_spot_instances():
     """
     Lists current EC2 instances
     """
-    reservations = CONN.get_all_reservations()
-    for reservation in reservations:
-        print reservation.id,reservation.region
-        instances = reservation.instances
-        for instance in instances:
-            print "Instance ype",instance.instance_type
-            print "Image ID",instance.image_id
-            print "IP address",instance.ip_address
-            print "Public dns",instance.public_dns_name
-            print "\n"
+    for s in SpotInstance.get_spot_instances():
+        print s.status()
 
 
 
@@ -90,29 +100,16 @@ def run_workers(N=32,IAM=False,home_dir='/home/ec2-user'):
     2. Installs the common crawl library
     3. Starts N process running AWS/worker.py
     """
-    local('mv config.py AWS/config.py')
-    try:
-        sudo('rm -rf '+home_dir+'/*')
-    except:
-        pass
-    put('AWS','~')
-    put('libs','~')
-    with cd('AWS'):
-        try:
-            run('rm -r logs')
-            run('mkdir logs')
-        except:
-            pass
-    if not IAM: # not required if the remote machine uses IAM roles (preferred)
-        put('/etc/boto.cfg','~')
-    sudo('mv boto.cfg /etc/boto.cfg')
-    with cd(home_dir+'/libs'): # using ~ causes an error with sudo since ~ turns into /root/
-        sudo('python setup.py install')
-    sudo('rm -rf '+home_dir+'/libs')
     with cd(home_dir+'/AWS'):
         for _ in range(N):
             run('screen -d -m python worker.py; sleep 1')
 
+
+def create_ami():
+    """
+    Start an on-Demand EC2 instance, update code, set up start script, create an AMI, terminate the instance.
+    """
+    pass
 
 def Update_GAE():
     """

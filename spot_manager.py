@@ -9,19 +9,23 @@ class SpotInstance(object):
     @classmethod
     def get_spot_instances(cls):
         requests = CONN.get_all_spot_instance_requests()
-        return [SpotInstance(request.request_id,request.instance_id) for request in requests]
+        return [SpotInstance(request.id,request.instance_id) for request in requests]
 
 
     def __init__(self,request_id=None,instance_id=None):
         self.request_id = request_id
         self.instance_id = instance_id
+        self.public_dns_name = None
         self.price = None
         self.instance_type = None
         self.image_id = None
         self.key_name = None
         self.fulfilled = False
+        self.instance_object = None
         if self.instance_id:
             self.fulfilled = True
+            self.get_instance()
+
 
     def request_instance(self,price,instance_type,image_id,key_name):
         self.price = price
@@ -46,25 +50,32 @@ class SpotInstance(object):
                 time.sleep(60) # Checking every minute
                 print "Checking job instance id for this spot request"
                 instance_id = CONN.get_all_spot_instance_requests(request_ids=[self.request_id])[0].instance_id
+                self.instance_id = instance_id
+            self.get_instance()
+
+    def get_instance(self):
             reservations = CONN.get_all_reservations()
             for reservation in reservations:
                 instances = reservation.instances
                 for instance in instances:
-                    if instance.id == instance_id:
-                        self.instance_id = instance_id
+                    if instance.id == self.instance_id:
                         self.public_dns_name =  instance.public_dns_name
-                        print "spot instance",self.instance_id,"with DNS",self.public_dns_name,"allocated"
+                        print self.status()
+                        self.instance_object = instance
                         return
+    def status(self):
+        return "request",self.request_id,"spot instance",self.instance_id,"with DNS",self.public_dns_name
 
     def terminate(self):
+        print "terminating spot instance",self.instance_id,self.public_dns_name
         CONN.terminate_instances(instance_ids=[self.instance_id])
 
 if __name__ == '__main__':
     from config import price,instance_type,image_id,key_name
-    spot = SpotInstance()
-    spot.request_instance(price,instance_type,image_id,key_name)
-    spot.check_allocation()
-    spot.terminate()
+    #spot = SpotInstance()
+    #spot.request_instance(price,instance_type,image_id,key_name)
+    #spot.check_allocation()
+    #spot.terminate()
     #with open('hosts.py','w') as fh:
     #    fh.write('hosts = '+repr([spot.public_dns_name])+'\ninstance_id="'+spot.instance_id+'"\n')
     #os.system('fab setup_instance')

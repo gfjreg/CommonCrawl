@@ -1,10 +1,6 @@
-Common Crawl dev
+Common Crawl Dev
 ------------
- A simple app for mining common crawl data
-
-
-! Under development !
-
+A simple app for mining common crawl data
 
 Author
 -------
@@ -13,32 +9,20 @@ Akshay Uday Bhat (www.akshaybhat.com)
 
 Dependancies
 --------------
-
 Boto
-
 Fabric
-
-Google Python App Engine SDK
+Google App Engine (optional)
 
 Documentation
 ------------
-
-requirements.txt : required python modules
-
-
 Folders
 
 AWS : Application code to be run on AWS-EC2
-
-GAE : App engine viewer for results
-
 libs: Python library for accessing CommonCrawl 2013 data
-
+GAE: (optional) A Google App Engine app that lists contents of the bucket.
 
 
 
 AWS credentials
 ----------------
-
-AWS credentials should be stored in
-
+AWS credentials should be stored in /etc/boto.cfg

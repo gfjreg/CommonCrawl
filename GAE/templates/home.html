@@ -2,11 +2,7 @@
 {% block title %}<title>A simple app for mining Common Crawl data by Akshay Bhat</title>{% endblock %}
 {% block script %}
         <script>
-            $(
-            function(){
-                $("#projects_table").tablesorter({ sortList: [[1,0]] });
-                $("#indexer_table").tablesorter({ sortList: [[1,0]] });
-            });
+            $(function(){});
         </script>
 {% endblock %}
 {% block content %}
@@ -22,27 +18,7 @@
 </div>
 <div class="row halfmargin">
     <div class="span12">
-        <table class="table table-bordered table-striped tablesorter" id="projects_table">
-            <thead>
-                <th>Project name</th>
-                <th>Project type</th>
-                <th>Current queue position</th>
-                <th>Number of indexers</th>
-                <th>Number of files processed</th>
-                <th>Number of entries generated</th>
-            </thead>
-            <tbody>
-                {% for k,v in project_list.items() %}
-                    <tr><td>{{ k }}</td>
-                        <td>{{ v.1 }}</td>
-                        <td style="text-align:right;padding-right:20px">{{ v.2}}</td>
-                        <td style="text-align:right;padding-right:20px">{{ v.3}}</td>
-                        <td style="text-align:right;padding-right:20px">{{ v.4}}</td>
-                        <td style="text-align:right;padding-right:20px">{{ v.5}}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
     </div>
 </div>
 
@@ -56,27 +32,6 @@
 </div>
 <div class="row halfmargin">
     <div class="span12">
-        <table class="table table-bordered table-striped tablesorter" id="indexer_table">
-            <thead>
-                <th>Project name</th>
-                <th>id</th>
-                <th>Time of first contact</th>
-                <th>Last contact</th>
-                <th>Number of files</th>
-                <th>Number of entries</th>
-            </thead>
-            <tbody>
-                {% for i in indexer_list %}
-                    <tr>
-                        <td>{{  i.0 }}</td>
-                        <td style="text-align:right;padding-right:20px">{{ i.1 }}</td>
-                        <td style="text-align:right;padding-right:20px">{{ i.2 }}</td>
-                        <td style="text-align:right;padding-right:20px">{{ i.3 }}</td>
-                        <td style="text-align:right;padding-right:20px"> {{ i.4 }}</td>
-                        <td style="text-align:right;padding-right:20px"> {{ i.5 }}</td>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
 </div>
 

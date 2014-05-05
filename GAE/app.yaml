@@ -12,14 +12,10 @@ libraries:
 - name: jinja2
   version: latest
 
-- name: numpy
-  version: latest
-
 - name: ssl
   version: "latest"  # or "2.7", as of this writing
 
 builtins:
-- appstats: on
 - remote_api: on
 
 pagespeed:
@@ -50,10 +46,6 @@ handlers:
 
 - url: /static
   static_dir: static
-
-- url: /Admin/.*
-  script: admin.app
-  login: admin
 
 - url: /.*
   script: main.app

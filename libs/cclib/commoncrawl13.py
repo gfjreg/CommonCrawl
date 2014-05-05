@@ -75,12 +75,11 @@ if __name__ == '__main__':
     print "wet",len(crawl.wet),crawl.wet[:10]
     print "warc",len(crawl.warc),crawl.warc[:10]
     print "text",len(crawl.text),crawl.text[:10]
-    infile = crawl.get_file(crawl.wat[26741])
+    infile = crawl.get_file(crawl.text[24181])
     count  = 0
     for line in infile:
-        count += 1
-        if count>(100000-5000) and line[0] == '{':
+        if 'WARC-Target-URI: http://www.amazon.com' in line:
             print line
-        if count>100000:
-            break
+            count += 1
+    print count
     #crawl.store()

@@ -1,18 +1,10 @@
 #!/usr/bin/env python
-import os,gzip,zlib,logging,urllib2,marshal,json,webapp2,jinja2,datetime
-from google.appengine.api import mail
+import os,logging,json,webapp2,jinja2
 from google.appengine.api import memcache
 from google.appengine.api import users
-from config.keys import AWS_KEY,AWS_SECRET,PASSCODE
-from boto.sqs.connection import SQSConnection
-from boto.sqs.message import Message
-from collections import defaultdict
-import cPickle as pickle
-
-#QueueFiles = {'Metadata':[line.strip() for line in gzip.open('data/metadata.gz')],'Text':[line.strip() for line in gzip.open('data/text.gz')]}
+#from keys import AWS_KEY,AWS_SECRET
 
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
-SQS = SQSConnection(AWS_KEY,AWS_SECRET)
 
 try:
     LOCAL = os.environ['SERVER_SOFTWARE'].startswith('Dev')
@@ -24,7 +16,6 @@ except:
 
 
 class BaseRequestHandler(webapp2.RequestHandler):
-
     def generate(self, template_name, template_values=None,cache=True):
         user = users.GetCurrentUser()
         if template_values ==  None:
@@ -34,7 +25,7 @@ class BaseRequestHandler(webapp2.RequestHandler):
           'user': user,
           'login_url': users.CreateLoginURL(self.request.uri),
           'logout_url': users.CreateLogoutURL(self.request.uri),
-          'application_name': 'Common_Crawl_Hobby',
+          'application_name': 'Data_Mining_Hobby',
           'entry_values':template_values,
         }
         values.update(template_values)

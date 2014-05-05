@@ -1,5 +1,6 @@
 keys.py
-boot.cfg
+boto.cfg
+hosts.py
 *.pyc
 *.log
 .idea/*

@@ -1,3 +1,2 @@
-__author__ = 'aub3'
-
-hosts = ['ec2-54-226-169-137.compute-1.amazonaws.com']
+hosts = [u'ec2-54-243-10-162.compute-1.amazonaws.com'] 
+instance_id='i-f608d3a6'

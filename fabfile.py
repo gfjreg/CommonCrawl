@@ -1,31 +1,75 @@
 __author__ = 'aub3'
 from fabric.api import env,local,run,sudo,put,cd,lcd
 from hosts import hosts
+from config import key_filename, OUTPUT_S3_BUCKET, JOB_QUEUE
+
+import boto.ec2,time,os
+
+CONN = boto.ec2.connect_to_region("us-east-1")
+
 env.hosts = hosts
 env.user = 'ec2-user'
-env.key_filename = '/users/aub3/.ssh/cornellmacos.pem'
+env.key_filename = key_filename
+
+
+def setup_queue():
+    """
+    Sets up the queue, creates bucket
+    """
+    import logging
+    from boto.s3.connection import S3Connection
+    from cclib.commoncrawl13 import CommonCrawl13
+    from cclib.queue import FileQueue
+    logging.basicConfig(filename='logs/setup_queue.log',level=logging.DEBUG,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.getLogger('boto').setLevel(logging.CRITICAL)
+    S3 = S3Connection()
+    logging.info("Creating bucket "+OUTPUT_S3_BUCKET)
+    S3.create_bucket(OUTPUT_S3_BUCKET)
+    logging.info("bucket created")
+    crawl = CommonCrawl13()
+    file_list = crawl.text # Text files
+    text_queue = FileQueue(JOB_QUEUE,file_list)
+    logging.debug("Adding "+str(len(file_list))+" files to queue "+JOB_QUEUE)
+    text_queue.add_files()
+    logging.debug("Finished adding files")
+    print "Finished adding files"
+
 
 def setup_instance():
     """
-    updates, installs necessary packages and node.js
+    updates, installs necessary packages on an EC2 instance
     """
     sudo('yum update -y')
     # install GCC, Make, Setuptools etc.
     sudo('yum install -y gcc-c++')
     sudo('yum install -y openssl-devel')
     sudo('yum install -y make')
+    sudo('yum install -y python-devel')
     sudo('yum install -y python-setuptools')
-    # install node.js
-    sudo('wget http://nodejs.org/dist/node-latest.tar.gz')
-    sudo('tar -zxvf node-latest.tar.gz')
-    sudo('rm -rf node-latest.tar.gz')
-    with cd('node-*'):
-        sudo('./configure --prefix=/usr')
-        sudo('make')
-        sudo('make install')
+    sudo('easy_install flask') # not used
+
+
+def list_ec2_instances():
+    """
+    Lists current EC2 instances
+    """
+    reservations = CONN.get_all_reservations()
+    for reservation in reservations:
+        print reservation.id,reservation.region
+        instances = reservation.instances
+        for instance in instances:
+            print "Instance ype",instance.instance_type
+            print "Image ID",instance.image_id
+            print "IP address",instance.ip_address
+            print "Public dns",instance.public_dns_name
+            print "\n"
+
 
 
 def test_update_lib():
+    """
+    Update & install common crawl library locally
+    """
     with lcd('libs'):
         try:
             local('rm -r build')
@@ -38,16 +82,15 @@ def setup_job():
     """
     Sets up the queue
     """
-    with lcd('AWS'):
-        local('python example_setup.py')
+    local('python setup_queue.py')
 
-def run_workers(N=2,IAM=False,home_dir='/home/ec2-user'):
+def run_workers(N=32,IAM=False,home_dir='/home/ec2-user'):
     """
-    0. Setup queue and create S3 bucket
     1. Uploads boto configuration and applications to EC2 instance
     2. Installs the common crawl library
-    3. Starts N process running AWS/example_worker.py
+    3. Starts N process running AWS/worker.py
     """
+    local('mv config.py AWS/config.py')
     try:
         sudo('rm -rf '+home_dir+'/*')
     except:
@@ -68,20 +111,11 @@ def run_workers(N=2,IAM=False,home_dir='/home/ec2-user'):
     sudo('rm -rf '+home_dir+'/libs')
     with cd(home_dir+'/AWS'):
         for _ in range(N):
-            run('screen -d -m python example_worker.py; sleep 1')
+            run('screen -d -m python worker.py; sleep 1')
 
 
-
-def setup_spot_instance():
+def Update_GAE():
     """
-    Upload spot.sh and set it to run on startup.
+    Updates and uploads Google App Engine   (Optional)
     """
-    put('spot.sh','')
-    sudo('mv spot.sh /etc/rc.local')
-
-def update_app_engine():
-    """
-    Update/Upload app engine
-    """
-    local("appcfg.py update GAE")
-
+    pass

@@ -44,14 +44,22 @@ def process_file(fileobj,test=False):
     try:
         count = 0
         counts = defaultdict(int)
+        amazon = []
+        tumblr = []
         for line in fileobj:
-            if test and count%100 == 0:
-                print line
             if line.startswith('WARC-Target-URI'):
                 count += 1
                 if "http://" in line:
                     counts[line.split('http://')[1].split('/')[0]] += 1
-        return {'count':count,'counts':[ (k,v) for k,v in counts.iteritems() if v>10]}
+                    if "amazon.com" in line.lower():
+                        amazon.append(line.split('WARC-Target-URI')[1])
+                    if "tumblr.com" in line.lower():
+                        tumblr.append(line.split('WARC-Target-URI')[1])
+        return {'count':count,
+                'amazon':amazon,
+                'tumblr':tumblr,
+                'counts':[(k,v) for k,v in counts.iteritems() if v>10]
+                }
     except:
         logging.exception("error while processing file")
         return {}

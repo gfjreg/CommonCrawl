@@ -165,6 +165,7 @@ def rm_bucket(bucket_name):
     """
     from boto.s3.connection import S3Connection
     S3 = S3Connection()
+    logging.getLogger('boto').setLevel(logging.CRITICAL)
     bucket = S3.get_bucket(bucket_name)
     bucketListResultSet = bucket.list()
     result = bucket.delete_keys([key.name for key in bucketListResultSet])
@@ -176,6 +177,7 @@ def ls_bucket(bucket_name=OUTPUT_S3_BUCKET):
     """
     from boto.s3.connection import S3Connection
     from boto.s3 import key
+    logging.getLogger('boto').setLevel(logging.CRITICAL)
     import random
     S3 = S3Connection()
     bucket = S3.get_bucket(bucket_name)

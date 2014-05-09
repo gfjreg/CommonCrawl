@@ -8,13 +8,18 @@ Akshay Uday Bhat (www.akshaybhat.com)
 
 Description:
 ---------
-This repo contains code for accessing commoncrawl 2013 crawl & code for launching spot instances for analyzing the crawl data.
+This repo contains code for accessing Common Crawl crawls (2013 & later) & code for launching spot instances for analyzing the crawl data.
 The code follows most of the best practices to ensure :
 
 1. An SQS queue is used to track progress of the job.
-2. Output is stored in an S3 Bucket with
+2. Output is stored in an S3 Bucket with reduced redundancy to reduce costs
+3. Permissions are passed to EC2 instances via IAM roles and instance profiles. Only required services S3 & SQS are authorized.
+4. Code is stored in an S3 bucket and is downloaded by the spot instance when instance is allocated via user_data script.
+5. Fabric is used to run tasks to get information, execute code and terminate instances.
 
 
+The current worker.py implements a simple function which stores count of urls and domains with at least 10 urls in the file.
+The function and configuration can be easily modified to support more complex analysis.
 
 Dependancies
 --------------
@@ -25,23 +30,35 @@ Documentation
 ------------
 libs/setup.py
 libs/cclib/commoncrawl13.py
-libs/cclib/queue.py
+
 
 config.py
-fabfile.py
-spotinstance.py
+
+Contains configuration for launching job, identifiers for bucket, queue etc.
+
 worker.py
 
-Tasks
-------------
+Process which is run on
 
+fabfile.py
 
+Contains tasks for setting up, running, monitoring and terminating jobs.
 
+spotinstance.py
 
+A small class to keep track of spot instance requests.
 
+queue.py
 
+A small class to keep track of files in SQS queue.
 
+example.json
 
-AWS credentials
+Example of output stored in the bucket from one file, using current worker.py
+
+Instructions
 ----------------
-AWS credentials should be stored in /etc/boto.cfg, the credentials are not transferred
+1. AWS credentials should be stored in /etc/boto.cfg, the credentials are not transferred
+2. To install library locally run "fab update_lib"
+3. To set up job run "fab setup_job", this will create IAM roles, S3 output bucket and SQS queue.
+4. To test worker script run "fab test_worker"

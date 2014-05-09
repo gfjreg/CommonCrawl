@@ -29,6 +29,7 @@ Dependancies
 --------
 - Boto (latest)
 - Fabric (1.8.1)
+- Flask (Optional)
 
 
 
@@ -57,10 +58,11 @@ Instructions / Tasks
 7. To list current spot instances run "fab ls_instances"
 8. To terminate all instances run "fab terminate_instances" (NOTE its important that you manually terminate all instances.)
 
-Optionally
+Optional
 --------
 * Use "fab ls_bucket" to check status of the output bucket and to download one randomly selected key to temp.json.
-* Use "fab rm_bucket" to check status of the output bucket and to download one randomly selected key to temp.json.
+* Use "fab rm_bucket:bucket_name" to delete a bucket and all keys inside it.
+* Use "fab run_server" to run a local server.
 
 
 Files

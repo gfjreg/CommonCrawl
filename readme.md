@@ -27,8 +27,8 @@ The function and configuration can be easily modified to support more complex an
 
 Dependancies
 --------------
-Boto
-Fabric
+- Boto (latest)
+- Fabric (1.8.1)
 
 Documentation
 ------------

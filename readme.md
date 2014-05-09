@@ -50,9 +50,19 @@ Documentation
 
 * example.json Example of output stored in the bucket from one file, using current worker.py
 
-Instructions
+Instructions / Tasks
 ----------------
 1. AWS credentials should be stored in /etc/boto.cfg, the credentials are not transferred
 2. To install library locally run "fab update_lib"
 3. To set up job run "fab setup_job", this will create IAM roles, S3 output bucket and SQS queue.
 4. To test worker script run "fab test_worker"
+5. To save code to S3 run "fab push_code"
+6. To request spot instances run "fab request_spot_instance" the spot instance once allocated will start running code automatically.
+7. To list current spot instances run "fab ls_instances"
+8. To terminate all instances run "fab terminate_instances" (NOTE its important that you manually terminate all instances.)
+
+Optionally
+* Use "fab ls_buckets" to check status of the output bucket and to download one randomly selected key to temp.json.
+
+
+

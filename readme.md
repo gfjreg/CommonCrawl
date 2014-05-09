@@ -12,9 +12,13 @@ This repo contains code for accessing Common Crawl crawls (2013 & later) & code 
 The code follows most of the best practices to ensure :
 
 1. An SQS queue is used to track progress of the job.
+
 2. Output is stored in an S3 Bucket with reduced redundancy to reduce costs
+
 3. Permissions are passed to EC2 instances via IAM roles and instance profiles. Only required services S3 & SQS are authorized.
+
 4. Code is stored in an S3 bucket and is downloaded by the spot instance when instance is allocated via user_data script.
+
 5. Fabric is used to run tasks to get information, execute code and terminate instances.
 
 
@@ -28,33 +32,23 @@ Fabric
 
 Documentation
 ------------
-libs/setup.py
-libs/cclib/commoncrawl13.py
+* libs/setup.py
 
+* libs/cclib/commoncrawl13.py
 
-config.py
+* libs/cclib/data/*.gz pickle files containing list of keys/files in each crawl
 
-Contains configuration for launching job, identifiers for bucket, queue etc.
+* config.py Contains configuration for launching job, identifiers for bucket, queue etc.
 
-worker.py
+* worker.py Code executed on each file in the crawl
 
-Process which is run on
+* fabfile.py Contains tasks for setting up, running, monitoring and terminating jobs.
 
-fabfile.py
+* spotinstance.py A small class to keep track of spot instance requests.
 
-Contains tasks for setting up, running, monitoring and terminating jobs.
+* queue.py A small class to keep track of files in SQS queue.
 
-spotinstance.py
-
-A small class to keep track of spot instance requests.
-
-queue.py
-
-A small class to keep track of files in SQS queue.
-
-example.json
-
-Example of output stored in the bucket from one file, using current worker.py
+* example.json Example of output stored in the bucket from one file, using current worker.py
 
 Instructions
 ----------------

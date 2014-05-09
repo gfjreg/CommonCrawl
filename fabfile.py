@@ -2,6 +2,7 @@ __author__ = 'aub3'
 from fabric.api import env,local,run,sudo,put,cd,lcd
 from config import *
 from spotinstance import *
+import filequeue
 import logging
 logging.basicConfig(filename='fab.log',level=logging.DEBUG,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -36,7 +37,7 @@ def setup_job():
     from boto.s3.connection import S3Connection
     from cclib.commoncrawl import CommonCrawl
     logging.getLogger('boto').setLevel(logging.CRITICAL)
-    from queue import FileQueue
+    import filequeue
     S3 = S3Connection()
     logging.info("Creating bucket "+OUTPUT_S3_BUCKET)
     S3.create_bucket(OUTPUT_S3_BUCKET)
@@ -44,9 +45,9 @@ def setup_job():
     # SQS
     crawl = CommonCrawl(CRAWL_ID)
     file_list = crawl.get_file_list(FILE_TYPE) # Text files
-    queue = FileQueue(JOB_QUEUE,file_list)
+    file_queue = filequeue.FileQueue(JOB_QUEUE,VISIBILITY_TIMEOUT,file_list)
     logging.debug("Adding "+str(len(file_list))+" "+FILE_TYPE+" files to queue "+JOB_QUEUE)
-    queue.add_files()
+    file_queue.add_files()
     logging.debug("Finished adding files")
     print "Finished adding files"
 

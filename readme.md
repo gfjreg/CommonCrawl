@@ -1,13 +1,13 @@
 Common Crawl Dev
-------------
+=================
 A simple app for mining common crawl data
 
 Author
--------
+============
 Akshay Uday Bhat (www.akshaybhat.com)
 
 Description:
----------
+==============
 This repo contains code for accessing Common Crawl crawls (2013 & later) & code for launching spot instances for analyzing the crawl data.
 The code follows most of the best practices to ensure :
 
@@ -26,12 +26,35 @@ The current worker.py implements a simple function which stores count of urls an
 The function and configuration can be easily modified to support more complex analysis.
 
 Dependancies
---------------
+===============
 - Boto (latest)
 - Fabric (1.8.1)
 
-Documentation
-------------
+
+
+Configuration
+==============
+
+
+
+Instructions / Tasks
+=============
+1. AWS credentials should be stored in /etc/boto.cfg, the credentials are not transferred
+2. To install library locally run "fab update_lib"
+3. To set up job run "fab setup_job", this will create IAM roles, S3 output bucket and SQS queue.
+4. To test worker script run "fab test_worker"
+5. To save code to S3 run "fab push_code"
+6. To request spot instances run "fab request_spot_instance" the spot instance once allocated will start running code automatically.
+7. To list current spot instances run "fab ls_instances"
+8. To terminate all instances run "fab terminate_instances" (NOTE its important that you manually terminate all instances.)
+
+Optionally
+--------------
+* Use "fab ls_buckets" to check status of the output bucket and to download one randomly selected key to temp.json.
+
+
+Files
+==================
 * libs/setup.py
 
 * libs/cclib/commoncrawl13.py
@@ -49,20 +72,3 @@ Documentation
 * queue.py A small class to keep track of files in SQS queue.
 
 * example.json Example of output stored in the bucket from one file, using current worker.py
-
-Instructions / Tasks
-----------------
-1. AWS credentials should be stored in /etc/boto.cfg, the credentials are not transferred
-2. To install library locally run "fab update_lib"
-3. To set up job run "fab setup_job", this will create IAM roles, S3 output bucket and SQS queue.
-4. To test worker script run "fab test_worker"
-5. To save code to S3 run "fab push_code"
-6. To request spot instances run "fab request_spot_instance" the spot instance once allocated will start running code automatically.
-7. To list current spot instances run "fab ls_instances"
-8. To terminate all instances run "fab terminate_instances" (NOTE its important that you manually terminate all instances.)
-
-Optionally
-* Use "fab ls_buckets" to check status of the output bucket and to download one randomly selected key to temp.json.
-
-
-

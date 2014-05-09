@@ -50,11 +50,11 @@ VISIBILITY_TIMEOUT = 500 #TODO Seconds during which a worker process has time to
 # Job Configuration
 #
 #########
-EC2_Tag = "simple_wat_stats_2"
-JOB_QUEUE = 'simple_wat_stats_2' # SQS queue name
-OUTPUT_S3_BUCKET = 'simple_wat_stats_2' # S3 bucket
+EC2_Tag = "cc_wat_13_2"
+JOB_QUEUE = 'wat_stats_2013_2' # SQS queue name
+OUTPUT_S3_BUCKET = 'wat_stats_2013_2' # S3 bucket
 CODE_BUCKET = "akshay_code" # bucket used to store code & configuration make sure this is different from output bucket
-CODE_KEY = "simple_wat_stats_2" # key for storing code which will be downloaded by user-data script
+CODE_KEY = "wat_stats_2013_2" # key for storing code which will be downloaded by user-data script
 FILE_TYPE = "wat" # Type of files you wish to process choose from {"wat","wet","text","warc"}
 CRAWL_ID = "2013_2" # 2nd crawl in 2013
 

@@ -2,7 +2,7 @@ __author__ = 'aub3'
 import logging
 from collections import defaultdict
 from cclib import commoncrawl
-from queue import FileQueue
+from filequeue import FileQueue
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 import json

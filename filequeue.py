@@ -1,6 +1,7 @@
 __author__ = 'aub3'
 from boto.sqs.connection import SQSConnection
 from boto.sqs.message import Message
+import base64
 
 class FileQueue(object):
     """
@@ -30,7 +31,12 @@ class FileQueue(object):
             count = len(self.files)
         while count:
             count -= 1
-            self.queue.write(Message(body=self.files.pop()))
+            message_buffer.append((count,base64.b64encode(self.files.pop()),0)) # required to maintain compatibility with
+            if len(message_buffer) > 9:
+                self.queue.write_batch(message_buffer)
+                message_buffer = []
+        self.queue.write_batch(message_buffer)
+
 
     def clear(self):
         """

@@ -1,107 +1,142 @@
 __author__ = 'aub3'
 from fabric.api import env,local,run,sudo,put,cd,lcd
-from hosts import hosts
-from config import key_filename, OUTPUT_S3_BUCKET, JOB_QUEUE,EC2_Tag
+from config import *
 from spotinstance import *
+import logging
+logging.basicConfig(filename='fab.log',level=logging.DEBUG,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-env.hosts = hosts
+env.hosts = [line.strip() for line in file("hosts").readlines()]
 env.user = 'ec2-user'
 env.key_filename = key_filename
 
+def setup_iam():
+    """
+    Sets up IAM policy, roles and instance profile
+    """
+    from boto.iam.connection import IAMConnection
+    IAM = IAMConnection()
+    profile = IAM.create_instance_profile(IAM_PROFILE)
+    role = IAM.create_role(IAM_ROLE)
+    IAM.add_role_to_instance_profile(IAM_PROFILE, IAM_ROLE)
+    IAM.put_role_policy(IAM_ROLE, IAM_POLICY_NAME, IAM_POLICY)
 
-def setup_queue():
+def setup_job():
     """
-    Sets up the queue adds all files (text or warc or wat or wet) , creates bucket to store output
+    Sets up the queue adds all files (text or warc or wat or wet), creates bucket to store output
     """
-    import logging
+    #IAM
+    try:
+        setup_iam()
+    except:
+        print "Error while setting up IAM PROFILE, most likely due to existing profile"
+        logging.exception("Error while setting up IAM PROFILE, most likely due to existing profile")
+        pass
+    #S3 bucket
     from boto.s3.connection import S3Connection
-    from cclib.commoncrawl13 import CommonCrawl13
-    from cclib.queue import FileQueue
-    logging.basicConfig(filename='logs/setup_queue.log',level=logging.DEBUG,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    from cclib.commoncrawl import CommonCrawl
     logging.getLogger('boto').setLevel(logging.CRITICAL)
+    from cclib.queue import FileQueue
     S3 = S3Connection()
     logging.info("Creating bucket "+OUTPUT_S3_BUCKET)
     S3.create_bucket(OUTPUT_S3_BUCKET)
     logging.info("bucket created")
-    crawl = CommonCrawl13()
-    file_list = crawl.text # Text files
-    text_queue = FileQueue(JOB_QUEUE,file_list)
-    logging.debug("Adding "+str(len(file_list))+" files to queue "+JOB_QUEUE)
-    text_queue.add_files()
+    # SQS
+    crawl = CommonCrawl(CRAWL_ID)
+    file_list = crawl.get_file_list(FILE_TYPE) # Text files
+    queue = FileQueue(JOB_QUEUE,file_list)
+    logging.debug("Adding "+str(len(file_list))+" "+FILE_TYPE+" files to queue "+JOB_QUEUE)
+    queue.add_files()
     logging.debug("Finished adding files")
     print "Finished adding files"
 
 
-def setup_instance(IAM=False,home_dir='/home/ec2-user'):
+def setup_instance(home_dir='/home/ec2-user'):
     """
-    updates, installs necessary packages on an EC2 instance
-    upload library, boto configuration, worker code
+    Updates, installs necessary packages on an EC2 instance.
+    Upload library, boto configuration, worker code.
+    Make sure that any changes made here are also reflected in USER_DATA script in config
     """
     sudo('yum update -y')
-    # install GCC, Make, Setuptools etc.
     sudo('yum install -y gcc-c++')
     sudo('yum install -y openssl-devel')
     sudo('yum install -y make')
     sudo('yum install -y python-devel')
     sudo('yum install -y python-setuptools')
-    sudo('easy_install flask') # not used
-    local('cp config.py AWS/config.py')
+    sudo('easy_install flask')
     try:
         sudo('rm -rf '+home_dir+'/*')
     except:
         pass
-    put('AWS','~')
     put('libs','~')
-    with cd('AWS'):
-        try:
-            run('rm -r logs')
-            run('mkdir logs')
-        except:
-            pass
-    if not IAM: # not required if the remote machine uses IAM roles (preferred)
-        put('/etc/boto.cfg','~')
-    sudo('mv boto.cfg /etc/boto.cfg')
+    put('config.py','~/config.py')
+    put('queue.py','~/queue.py')
+    put('worker.py','~/worker.py')
     with cd(home_dir+'/libs'): # using ~ causes an error with sudo since ~ turns into /root/
         sudo('python setup.py install')
     sudo('rm -rf '+home_dir+'/libs')
-    local('rm AWS/config.py')
 
 
-def list_spot_instances():
+def push_code():
     """
-    Lists current EC2 instances
+    Bundles worker code, library & configuration in to a zipped files and store it on S3.
+    Finally updates
     """
-    for s in SpotInstance.get_spot_instances():
-        print s.status()
+    from boto.s3.connection import S3Connection
+    from boto.s3 import key
+    try:
+        local("rm -r code")
+    except:
+        pass
+    local("mkdir code")
+    local("cp config.py code/config.py")
+    local("cp queue.py code/queue.py")
+    local("cp -r libs code/libs")
+    local("cp worker.py code/worker.py")
+    local("tar -zcvf code.tar.gz code")
+    S3 = S3Connection()
+    code_bucket = S3.create_bucket(CODE_BUCKET)
+    code = key.Key(code_bucket)
+    code.key = CODE_KEY
+    code.set_contents_from_filename("code.tar.gz")
+    local("rm code.tar.gz")
+    local("rm -r code")
+    logging.info("code pushed to bucket "+CODE_BUCKET+" key "+CODE_KEY)
+
+
+def ls_instances():
+    """
+    Lists current EC2 instances with current Job tag, and stores their public_dns_name to hosts.
+    """
+    with open('hosts','w') as fh:
+        for instance in SpotInstance.get_spot_instances(EC2_Tag):
+            print instance.status()
+            if instance.public_dns_name:
+                fh.write(instance.public_dns_name+'\n')
+    print "Information about current spot instance has been added to hosts.py"
 
 
 def request_spot_instance():
     """
     Lists current EC2 instances
     """
-    from config import price,instance_type,image_id,key_name
     spot = SpotInstance(EC2_Tag)
-    spot.request_instance(price,instance_type,image_id,key_name)
-    spot.check_allocation()
-    spot.add_tag()
-    with open('hosts.py','w') as fh:
-        fh.write('hosts = '+repr([spot.public_dns_name])+'\ninstance_id="'+spot.instance_id+'"\n')
-    print "Information about current spot instance written to hosts.py"
-    print "Use 'fab setup_instance' and 'fab run_workers'"
+    spot.request_instance(price,instance_type,image_id,key_name,USER_DATA,IAM_PROFILE)
 
 
-def terminate_all_spot():
+def terminate_instances():
     """
-    Terminates all spot instances
+    Terminates all spot instances, clear hosts file
     """
-    for s in SpotInstance.get_spot_instances():
-        print "terminating"
-        print s.status()
-        s.terminate()
+    for s in SpotInstance.get_spot_instances(EC2_Tag):
+        print "terminating", s.status()
+        if s.instance_object and s.instance_object.state_code != 48:
+            s.terminate()
         print "terminated"
+    with file("hosts","w") as f:
+        f.write("")
 
-def test_update_lib():
+def update_lib():
     """
     Update & install common crawl library locally
     """
@@ -113,31 +148,57 @@ def test_update_lib():
         local('python setup.py install')
         local('rm -r build')
 
-def run_workers(N=32,IAM=False,home_dir='/home/ec2-user'):
+def run_workers(N=NUM_WORKERS,IAM=False,home_dir='/home/ec2-user'):
     """
-    1. Uploads boto configuration and applications to EC2 instance
-    2. Installs the common crawl library
-    3. Starts N process running AWS/worker.py
+    Starts N process running AWS/worker.py
     """
-    with cd(home_dir+'/AWS'):
+    with cd(home_dir):
         for _ in range(N):
             run('screen -d -m python worker.py; sleep 1')
 
 
-def create_ami():
+def rm_bucket(bucket_name):
     """
-    Start an on-Demand EC2 instance, update code, set up start script, create an AMI, terminate the instance.
+    Deletes the specified bucket
+    bucket_name : str
     """
-    pass
+    from boto.s3.connection import S3Connection
+    S3 = S3Connection()
+    bucket = S3.get_bucket(bucket_name)
+    bucketListResultSet = bucket.list()
+    result = bucket.delete_keys([key.name for key in bucketListResultSet])
+    S3.delete_bucket(bucket_name)
 
-def deploy_GAE():
+def ls_bucket(bucket_name=OUTPUT_S3_BUCKET):
     """
-    Updates and uploads Google App Engine   (Optional)
+    Selects one key from the bucket store locally and runs less command
     """
-    pass
+    from boto.s3.connection import S3Connection
+    from boto.s3 import key
+    import random
+    S3 = S3Connection()
+    bucket = S3.get_bucket(bucket_name)
+    keys = [example_key for example_key in bucket.list()]
+    if keys:
+        example = key.Key(bucket)
+        example.key = random.sample(keys,1)[0]
+        example.get_contents_to_filename("temp.json")
+    print "Number of keys in the output bucket ",len(keys)
+    print "a randomly selected key is written to temp.json"
 
-def start_local_server():
+def kill_python_processes():
     """
-    A Local flask server provides information about current job   (Optional)
+    Kills all python processes on remote hosts
     """
-    pass
+    sudo("killall python")
+
+def test_worker():
+    """
+    Runs worker.py in test mode after updating the local version of the common crawl library
+    """
+    update_lib()
+    try:
+        local("rm worker.log")
+    except:
+        pass
+    local("python worker.py test")

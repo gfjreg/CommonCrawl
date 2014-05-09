@@ -1,6 +1,7 @@
 keys.py
 boto.cfg
-hosts.py
+hosts
+temp.json
 *.pyc
 *.log
 .idea/*

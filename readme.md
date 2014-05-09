@@ -6,6 +6,7 @@ Author
 --------
 Akshay Uday Bhat (www.akshaybhat.com)
 
+
 Description:
 --------
 This repo contains code for accessing Common Crawl crawls (2013 & later) & code for launching spot instances for analyzing the crawl data.
@@ -35,16 +36,32 @@ Dependancies
 
 Configuration
 --------
-- Put boto configuration in /etc/boto.cfg on your local machine, note that this information is not sent to EC2 machines
 
+- Access & Security
+- Put boto configuration in /etc/boto.cfg on your local machine, note that this information is never sent to EC2 machines
 - key_filename = Path to your private key file
-
 - IAM_ROLE = "ccSpot_role" # Role name, no need to change
 - IAM_PROFILE = "ccSpot_profile" # Profile name, no need to change
 - IAM_POLICY_NAME = "ccSpt_policy" # Policy name, no need to change
 - IAM_POLICY = # Policy, no need to change unless you are accessing other services such as SNS etc.
 
+- Instance Configuration
+- price = price in dollars for a spot instance
+- instance_type =
+- image_id =
+- key_name = name of your configured key-pair, should be same key as the pem file above
+- NUM_WORKERS = Number of worker processes per machine depends on the instance type & memory foot print
+- VISIBILITY_TIMEOUT = Seconds during which a worker process has time to process the message, this value should be the maximum time a worker process will take to process a single process
 
+- Job Configuration
+- EC2_Tag = "cc_wat_13_2"
+- JOB_QUEUE =  SQS queue name
+- OUTPUT_S3_BUCKET = S3 bucket
+- CODE_BUCKET = bucket used to store code & configuration make sure this is different from output bucket above
+- CODE_KEY =  key for storing code which will be downloaded by user-data script
+- FILE_TYPE = "wat" # Type of files you wish to process choose from {"wat","wet","text","warc"}
+- CRAWL_ID = crawl id choose from  { '2013_1','2013_2','2014_1',"ALL"}
+- USED_DATA = script run by the spot instance the "first time" it is booted up
 
 
 Instructions / Tasks
@@ -62,7 +79,7 @@ Optional
 --------
 * Use "fab ls_bucket" to check status of the output bucket and to download one randomly selected key to temp.json.
 * Use "fab rm_bucket:bucket_name" to delete a bucket and all keys inside it.
-* Use "fab run_server" to run a local server.
+* Use "fab run_server" to run a local server, the local server allows you to monitor progress and explore results.
 
 
 Files

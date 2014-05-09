@@ -29,7 +29,7 @@ def process_queue(queue,crawl,test=False):
     for m in queue:
         fname = m.get_body()
         logging.debug("starting "+fname)
-        data = process_file(crawl.get_file(fname),test)
+        data = process_file(crawl.get_file(fname),fname,test)
         store_S3(fname,data)
         if test:
             logging.debug("did not delete the message")
@@ -40,29 +40,34 @@ def process_queue(queue,crawl,test=False):
     logging.debug("finished queue "+JOB_QUEUE)
 
 
-def process_file(fileobj,test=False):
+def process_file(fileobj,filename,test=False):
+    count = 0
+    counts = defaultdict(int)
+    amazon = []
+    tumblr = []
+    error = False
     try:
-        count = 0
-        counts = defaultdict(int)
-        amazon = []
-        tumblr = []
         for line in fileobj:
+            line = line.strip()
             if line.startswith('WARC-Target-URI'):
                 count += 1
                 if "http://" in line:
                     counts[line.split('http://')[1].split('/')[0]] += 1
                     if "amazon.com" in line.lower():
-                        amazon.append(line.split('WARC-Target-URI')[1])
+                        amazon.append(line.split('WARC-Target-URI:')[1].strip())
                     if "tumblr.com" in line.lower():
-                        tumblr.append(line.split('WARC-Target-URI')[1])
-        return {'count':count,
-                'amazon':amazon,
-                'tumblr':tumblr,
-                'counts':[(k,v) for k,v in counts.iteritems() if v>10]
-                }
+                        tumblr.append(line.split('WARC-Target-URI:')[1].strip())
     except:
         logging.exception("error while processing file")
-        return {}
+        error =True
+        pass
+    return {'count':count,
+            'amazon':amazon,
+            'tumblr':tumblr,
+            'counts':[(k,v) for k,v in counts.iteritems() if v>10],
+            "filename":filename,
+            "error":error
+            }
 
 if __name__ == '__main__':
     import sys

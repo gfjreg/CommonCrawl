@@ -71,7 +71,7 @@ def setup_instance(home_dir='/home/ec2-user'):
         pass
     put('libs','~')
     put('config.py','~/config.py')
-    put('queue.py','~/queue.py')
+    put('filequeue.py','~/filequeue.py')
     put('worker.py','~/worker.py')
     with cd(home_dir+'/libs'): # using ~ causes an error with sudo since ~ turns into /root/
         sudo('python setup.py install')
@@ -91,7 +91,7 @@ def push_code():
         pass
     local("mkdir code")
     local("cp config.py code/config.py")
-    local("cp queue.py code/queue.py")
+    local("cp filequeue.py code/filequeue.py")
     local("cp -r libs code/libs")
     local("cp worker.py code/worker.py")
     local("tar -zcvf code.tar.gz code")

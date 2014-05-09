@@ -36,9 +36,8 @@ Configuration
 --------
 - Put boto configuration in /etc/boto.cfg on your local machine, note that this information is not sent to EC2 machines
 
-- key_filename = <Path to your private key file>
+- key_filename = Path to your private key file
 
-- # Following IAM role is used when launching instance
 - IAM_ROLE = "ccSpot_role" # Role name, no need to change
 - IAM_PROFILE = "ccSpot_profile" # Profile name, no need to change
 - IAM_POLICY_NAME = "ccSpt_policy" # Policy name, no need to change

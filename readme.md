@@ -83,4 +83,4 @@ Files
 
 * example.json Example of output stored in the bucket from one file, using current worker.py
 
-* local_server.py A flask server to explore results and to keep track of instances, queue positions.
+* server.py A flask server to explore results and to keep track of instances, queue positions.

@@ -1,0 +1,39 @@
+{% extends "base_generic.html" %}
+{% block title %}<title>A simple app for mining Common Crawl data by Akshay Bhat</title>{% endblock %}
+{% block script %}
+        <script>
+            $(function(){});
+        </script>
+{% endblock %}
+{% block content %}
+    <div class="row halfmargin" id="status">
+    </div>
+
+<div class="row">
+    <div class="span12">
+        <h3>
+            SQS Queue : {{ config.JOB_QUEUE }}
+        </h3>
+    </div>
+    <div class="span12">
+        <h3>
+            S3 Bucket : {{ config.OUTPUT_S3_BUCKET }}
+        </h3>
+    </div>
+</div>
+<div class="row">
+    <div class="span12">
+        <h3>
+            Current Spot instances
+        </h3>
+    </div>
+</div>
+
+
+<div class="row halfmargin">
+    <div class="span12">
+    </div>
+</div>
+
+{% endblock %}
+

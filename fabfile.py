@@ -36,7 +36,7 @@ def setup_job():
     from boto.s3.connection import S3Connection
     from cclib.commoncrawl import CommonCrawl
     logging.getLogger('boto').setLevel(logging.CRITICAL)
-    from cclib.queue import FileQueue
+    from queue import FileQueue
     S3 = S3Connection()
     logging.info("Creating bucket "+OUTPUT_S3_BUCKET)
     S3.create_bucket(OUTPUT_S3_BUCKET)

@@ -122,7 +122,7 @@ def request_spot_instance():
     Lists current EC2 instances
     """
     spot = SpotInstance(EC2_Tag)
-    spot.request_instance(price,instance_type,image_id,key_name,USER_DATA,IAM_PROFILE)
+    spot.request_instance(price,instance_type,image_id,key_name,USER_DATA,IAM_PROFILE,SPOT_REQUEST_VALID)
 
 
 def terminate_instances():

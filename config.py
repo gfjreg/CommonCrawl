@@ -57,7 +57,8 @@ CODE_BUCKET = "akshay_code" # bucket used to store code & configuration make sur
 CODE_KEY = "wat_stats_2013_2" # key for storing code which will be downloaded by user-data script
 FILE_TYPE = "wat" # Type of files you wish to process choose from {"wat","wet","text","warc"}
 CRAWL_ID = "2013_2" # 2nd crawl in 2013
-
+SPOT_REQUEST_VALID = 20 # Minutes within which the spot request must be full filled otherwise it is cancelled
+MAX_TIME_MINS = 600 # maxiumum amount of time the instance should run 60 * 10 hours = 600 minutes (This limits the cost in case you forget to terminate the instance)
 
 
 
@@ -74,6 +75,8 @@ os.system('yum install -y make')
 os.system('yum install -y python-devel')
 os.system('yum install -y python-setuptools')
 os.system('easy_install flask')
+os.system('yum install -y gcc-c++ &')
+os.system('screen -d -m shutdown -h <MAX_TIME_MINS>; sleep 1')
 
 S3 = S3Connection()
 code_bucket = S3.get_bucket("<CODE_BUCKET>") # Bucket where code is stored
@@ -84,5 +87,5 @@ os.system('cd /root/;tar -xzf code.tar.gz')
 os.system('cd /root/code/libs;python setup.py install')
 for worker in range(<NUM_WORKERS>):
     os.system('cd /root/;screen -d -m python code/worker.py; sleep 1')
-""".replace("<CODE_BUCKET>",CODE_BUCKET).replace("<CODE_KEY>",CODE_KEY).replace("<NUM_WORKERS>",str(NUM_WORKERS))
+""".replace("<CODE_BUCKET>",CODE_BUCKET).replace("<CODE_KEY>",CODE_KEY).replace("<NUM_WORKERS>",str(NUM_WORKERS)).replace("<MAX_TIME_MINS>",str(MAX_TIME_MINS))
 

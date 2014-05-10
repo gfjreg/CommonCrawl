@@ -40,7 +40,7 @@ class SpotInstance(object):
             CONN.create_tags([self.request_id], {"Tag":self.tag})
 
 
-    def request_instance(self,price,instance_type,image_id,key_name,user_data,instance_profile):
+    def request_instance(self,price,instance_type,image_id,key_name,user_data,instance_profile,valid_mins):
         self.price = price
         self.instance_type = instance_type
         self.image_id = image_id
@@ -50,7 +50,7 @@ class SpotInstance(object):
         print "You are launching a spot instance request."
         print "It is important that you closely monitor and cancel unfilled requests using AWS web console."
         if raw_input("\n Please enter 'yes' to start >> ")=='yes':
-            self.valid_until = (datetime.datetime.utcnow()+datetime.timedelta(minutes=20)).isoformat() # valid for 20 minutes from now
+            self.valid_until = (datetime.datetime.utcnow()+datetime.timedelta(minutes=valid_mins)).isoformat() # valid for 20 minutes from now
             print "request valid until UTC: ", self.valid_until
             spot_request = CONN.request_spot_instances(price=price,instance_type=instance_type,image_id=image_id,key_name=key_name,valid_until=self.valid_until,user_data=self.user_data,instance_profile_name=self.instance_profile)
             self.request_id = spot_request[0].id

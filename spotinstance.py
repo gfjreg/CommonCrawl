@@ -54,7 +54,7 @@ class SpotInstance(object):
             print "request valid until UTC: ", self.valid_until
             spot_request = CONN.request_spot_instances(price=price,instance_type=instance_type,image_id=image_id,key_name=key_name,valid_until=self.valid_until,user_data=self.user_data,instance_profile_name=self.instance_profile)
             self.request_id = spot_request[0].id
-            time.sleep(30) # wait for some time, otherwise AWS throws up an error
+            time.sleep(4) # wait for some time, otherwise AWS throws up an error
             self.add_tag()
             print "requesting a spot instance"
         else:

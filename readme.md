@@ -48,10 +48,11 @@ Configuration
 - Instance Configuration
 - price = price in dollars for a spot instance
 - instance_type =
-- image_id =
+- image_id = # Amazon Machine Image (AMI) ID
 - key_name = name of your configured key-pair, should be same key as the pem file above
 - NUM_WORKERS = Number of worker processes per machine depends on the instance type & memory foot print
 - VISIBILITY_TIMEOUT = Seconds during which a worker process has time to process the message, this value should be the maximum time a worker process will take to process a single process
+- MAX_TIME_MINS = 230 # maxiumum amount of time the instance should run 60 * 3 + 50 mins  = 230 minutes (This limits the cost in case you forget to terminate the instance)
 
 - Job Configuration
 - EC2_Tag = "cc_wat_13_2"

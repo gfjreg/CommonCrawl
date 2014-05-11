@@ -58,7 +58,7 @@ CODE_KEY = "wat_stats_2013_2" # key for storing code which will be downloaded by
 FILE_TYPE = "wat" # Type of files you wish to process choose from {"wat","wet","text","warc"}
 CRAWL_ID = "2013_2" # 2nd crawl in 2013
 SPOT_REQUEST_VALID = 20 # Minutes within which the spot request must be full filled otherwise it is cancelled
-MAX_TIME_MINS = 600 # maxiumum amount of time the instance should run 60 * 10 hours = 600 minutes (This limits the cost in case you forget to terminate the instance)
+MAX_TIME_MINS = 55 # maxiumum amount of time the instance should run 60 * 10 hours = 600 minutes (This limits the cost in case you forget to terminate the instance)
 
 
 

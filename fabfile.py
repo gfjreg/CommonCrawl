@@ -3,7 +3,7 @@ from fabric.api import env,local,run,sudo,put,cd,lcd
 from config import *
 from spotinstance import *
 import filequeue
-import logging
+import logging,json
 logging.basicConfig(filename='fab.log',level=logging.DEBUG,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
@@ -186,8 +186,11 @@ def ls_bucket(bucket_name=OUTPUT_S3_BUCKET):
         example = key.Key(bucket)
         example.key = random.sample(keys,1)[0]
         example.get_contents_to_filename("temp.json")
+    with open("output_keys.json",'w') as fh:
+        fh.write(json.dumps(keys))
     print "Number of keys in the output bucket ",len(keys)
     print "a randomly selected key is written to temp.json"
+    print "list of keys are stored in output_keys.json"
 
 def kill_python_processes():
     """

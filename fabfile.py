@@ -7,8 +7,8 @@ import logging,json
 logging.basicConfig(filename='fab.log',level=logging.DEBUG,format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-env.hosts = [line.strip() for line in file("hosts").readlines()]
 env.user = 'ec2-user'
+env.hosts = [line.strip() for line in file("hosts").readlines()]
 env.key_filename = key_filename
 
 def setup_iam():
@@ -163,13 +163,8 @@ def rm_bucket(bucket_name):
     Deletes the specified bucket
     bucket_name : str
     """
-    from boto.s3.connection import S3Connection
-    S3 = S3Connection()
-    logging.getLogger('boto').setLevel(logging.CRITICAL)
-    bucket = S3.get_bucket(bucket_name)
-    bucketListResultSet = bucket.list()
-    result = bucket.delete_keys([key.name for key in bucketListResultSet])
-    S3.delete_bucket(bucket_name)
+    import os
+    os.system('aws s3 rb s3://'+bucket_name+' --force')
 
 def ls_bucket(bucket_name=OUTPUT_S3_BUCKET):
     """

@@ -47,6 +47,7 @@ def home():
     json_data["crawl"] = {crawl_id: {file_type:CRAWLS[crawl_id].get_file_list(file_type) for file_type in commoncrawl.CommonCrawl.file_types} for crawl_id in CRAWLS}
     return render_template('home.html',config=config,crawls=CRAWLS,json_data=json.dumps(json_data))
 
+#key.get_contents_as_string(headers={'Range' : 'bytes=0-9'})
 
 if __name__ == '__main__':
     app.run(port=8087)

@@ -79,7 +79,7 @@ class CommonCrawl(object):
         pickle.dump(self.files,fh)
         fh.close()
 
-    def get_file(self,key,compressed_string=False):
+    def get_file(self,key,compressed_string=False,headers=None):
         """
         Downloads file from AWS S3 and returns a GzipFile object.
         Optionally if compressed_string == True then it can return the compressed data as a string.
@@ -94,10 +94,15 @@ class CommonCrawl(object):
         item = Key(self.bucket)
         item.key = key
         if compressed_string:
-            return item.get_contents_as_string()
+            if headers:
+                return item.get_contents_as_string(headers=headers)
+            else:
+                return item.get_contents_as_string()
         else:
-            return gzip.GzipFile(fileobj=StringIO(item.get_contents_as_string()))
-
+            if headers:
+                return gzip.GzipFile(fileobj=StringIO(item.get_contents_as_string(headers=headers)))
+            else:
+                return gzip.GzipFile(fileobj=StringIO(item.get_contents_as_string()))
 
 
 if __name__ == '__main__':

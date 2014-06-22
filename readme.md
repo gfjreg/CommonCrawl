@@ -80,8 +80,6 @@ Optional
 --------
 * Use "fab ls_bucket" to check status of the output bucket and to download one randomly selected key to temp.json.
 * Use "fab rm_bucket:bucket_name" to delete a bucket and all keys inside it.
-* Use "fab run_server" to run a local server, the local server allows you to monitor progress and explore results.
-
 
 Files
 --------

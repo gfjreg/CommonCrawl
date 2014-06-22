@@ -44,7 +44,6 @@ def process_file(fileobj,filename,test=False):
     count = 0
     counts = defaultdict(int)
     amazon = []
-    tumblr = []
     error = False
     try:
         for line in fileobj:
@@ -55,15 +54,12 @@ def process_file(fileobj,filename,test=False):
                     counts[line.split('http://')[1].split('/')[0]] += 1
                     if "amazon.com" in line.lower():
                         amazon.append(line.split('WARC-Target-URI:')[1].strip())
-                    if "tumblr.com" in line.lower():
-                        tumblr.append(line.split('WARC-Target-URI:')[1].strip())
     except:
         logging.exception("error while processing file")
         error =True
         pass
-    return {'count':count,
+    return {'metdata_lines':count,
             'amazon':amazon,
-            'tumblr':tumblr,
             'counts':[(k,v) for k,v in counts.iteritems() if v>10],
             "filename":filename,
             "error":error

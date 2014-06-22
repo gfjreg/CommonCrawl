@@ -102,5 +102,3 @@ Files
 * filequeue.py A small class to keep track of files in SQS queue.
 
 * example.json Example of output stored in the bucket from one file, using current worker.py
-
-* server.py A flask server to explore results and to keep track of instances, queue positions.

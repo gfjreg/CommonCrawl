@@ -7,3 +7,4 @@ temp.json
 .idea/*
 libs/build/*
 logs/*
+.ipynb_checkpoints/*

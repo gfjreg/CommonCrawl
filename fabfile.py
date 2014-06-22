@@ -204,10 +204,3 @@ def test_worker():
         pass
     local("python worker.py test")
 
-
-def run_server():
-    """
-    runs local server
-    """
-    update_lib()
-    local("python server.py")

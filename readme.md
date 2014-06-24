@@ -9,9 +9,9 @@ Akshay Uday Bhat (www.akshaybhat.com)
 
 Quick Demo and Documentation
 --------
-You can view a quick demo and documentation [on ipython notebook viewer](http://nbviewer.ipython.org/github/AKSHAYUBHAT/CommonCrawl/blob/master/CommonCrawlDemo.ipynb) .
+You can view a quick demo and documentation [on ipython notebook viewer](http://nbviewer.ipython.org/github/AKSHAYUBHAT/CommonCrawl/blob/master/Demo.ipynb) .
 
-[http://nbviewer.ipython.org/github/AKSHAYUBHAT/CommonCrawl/blob/master/CommonCrawlDemo.ipynb](http://nbviewer.ipython.org/github/AKSHAYUBHAT/CommonCrawl/blob/master/CommonCrawlDemo.ipynb)
+[http://nbviewer.ipython.org/github/AKSHAYUBHAT/CommonCrawl/blob/master/Demo.ipynb](http://nbviewer.ipython.org/github/AKSHAYUBHAT/CommonCrawl/blob/master/Demo.ipynb)
 
 Description:
 --------
